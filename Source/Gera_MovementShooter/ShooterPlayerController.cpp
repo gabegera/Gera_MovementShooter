@@ -3,10 +3,6 @@
 
 #include "ShooterPlayerController.h"
 
-void AShooterPlayerController::TimerFunction()
-{
-
-}
 
 void AShooterPlayerController::BeginPlay()
 {
@@ -52,7 +48,7 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 {
 	if (!IsValid(PlayerCharacter)) return;
 
-	if (DashCooldown <= 0.0f)
+	if (DashCooldown <= 0.0f && !PlayerCharacter->bIsCrouched)
 	{
 		FVector DashDirection;
 		if (InputX == 0 && InputY == 0)
@@ -66,6 +62,18 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 	}
 	
 }
+
+void AShooterPlayerController::Crouch()
+{
+	PlayerCharacter->Crouch();
+}
+
+void AShooterPlayerController::StopCrouch()
+{
+	PlayerCharacter->UnCrouch();
+}
+
+
 
 void AShooterPlayerController::Shoot()
 {

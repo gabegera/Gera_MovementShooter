@@ -21,9 +21,6 @@ class GERA_MOVEMENTSHOOTER_API AShooterPlayerController : public APlayerControll
 
 public:
 
-	void TimerFunction();
-	FTimerHandle TimerHandle;
-
 	
 protected:
 
@@ -77,6 +74,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void Dash(float InputX, float InputY);
+
+	UFUNCTION(BlueprintCallable)
+	void Crouch();
+
+	UFUNCTION(BlueprintCallable)
+	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
