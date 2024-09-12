@@ -51,7 +51,7 @@ protected:
 	float MouseSensitivity = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
-	int Ammo = 100;
+	int RifleAmmo = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float DefaultFireRate = 0.2f;
@@ -82,10 +82,19 @@ protected:
 	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable)
-	void Shoot();
+	void ShootHitscan(float Spread);
+
+	UFUNCTION(BlueprintCallable)
+	void ShootProjectile();
+
+	UFUNCTION(BlueprintCallable)
+	void Shoot(bool isProjectile, bool isShotgun, float Spread);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetFireRate() { FireRate = 0; }
+
+	UFUNCTION(BlueprintCallable)
+	void AddAmmo(int Addition = 100) { RifleAmmo += Addition; }
 
 public:
 	// Called every frame

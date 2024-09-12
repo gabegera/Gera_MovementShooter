@@ -73,19 +73,37 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
-
-
-void AShooterPlayerController::Shoot()
+void AShooterPlayerController::ShootHitscan(float Spread)
 {
-	if (Ammo > 0 && FireRate <= 0)
+	FHitResult Hit;
+
+	FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
+	FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f;
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+}
+
+void AShooterPlayerController::ShootProjectile()
+{
+
+}
+
+
+
+void AShooterPlayerController::Shoot(bool isProjectile, bool isShotgun, float Spread)
+{
+	if (RifleAmmo > 0 && FireRate <= 0)
 	{
-		FHitResult Hit;
 
-		FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
-		FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f;
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
-
-		Ammo--;
+		if (isProjectile)
+		{
+			ShootProjectile();
+		}
+		else
+		{
+			ShootHitscan(Spread);
+		}
+		
+		RifleAmmo--;
 		FireRate = DefaultFireRate;
 	}
 }
