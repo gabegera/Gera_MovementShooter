@@ -7,6 +7,8 @@
 #include "ShooterPlayerCharacter.h"
 #include "GrenadeProjectile.h"
 #include "PickupObject.h"
+#include "HealthComponent.h"
+#include "Engine/DamageEvents.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ShooterPlayerController.generated.h"
@@ -65,19 +67,25 @@ protected:
 	float CurrentPistolCharge = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
-	float PistolChargeDamageMultiplier = 5.0f;
+	float PistolMaxDamage = 25.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
-	float PistolChargeSpeed = 2.0f; // Seconds to Charge
+	float PistolChargeSpeed = 1.0f; // Seconds to Charge
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	int RifleAmmo = 20;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
+	float RifleDamage = 10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float RifleSpread = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	int ShotgunAmmo = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
+	float ShotgunPelletDamage = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	int ShotgunPellets = 10;
@@ -123,7 +131,7 @@ protected:
 	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable)
-	void ShootHitscan(float SpreadX, float SpreadY);
+	void ShootHitscan(float SpreadX, float SpreadY, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void ChargeShot(float TimeToCharge);

@@ -73,13 +73,34 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
-void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY)
+void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, float Damage)
 {
+	FHitResult DebugHit;
 	FHitResult Hit;
 
 	FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
 	FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f + PlayerCameraManager->GetActorRightVector() * SpreadX + PlayerCameraManager->GetActorUpVector() * SpreadY;
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugHit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+
+	FCollisionQueryParams IgnorePlayer;
+	IgnorePlayer.AddIgnoredActor(PlayerCharacter->GetUniqueID());
+
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_PhysicsBody, IgnorePlayer);
+
+	AActor* ActorHit = Hit.GetActor();
+
+	// If Hit has Health, Deal Damage
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
+	{
+		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT DUMMY");
+
+		ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
+	}
+	//If Hit Is Simulating Physics, Add Impulse
+	else if (ActorHit && ActorHit->GetComponentByClass<UStaticMeshComponent>()->IsSimulatingPhysics())
+	{
+		ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
+	}
 }
 
 void AShooterPlayerController::ChargeShot(float TimeToCharge)
@@ -98,11 +119,9 @@ void AShooterPlayerController::FireChargedShot(float Charge)
 {
 	CurrentPistolCharge = 0.0f;
 
-	FHitResult Hit;
+	float Damage = Charge / PistolChargeSpeed * PistolMaxDamage;
 
-	FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
-	FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f;
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+	ShootHitscan(0, 0, Damage);
 }
 
 void AShooterPlayerController::ShootProjectile(float Velocity)
@@ -114,7 +133,7 @@ void AShooterPlayerController::ShootProjectile(float Velocity)
 
 	SpawnedGrenade->SetActorLocation(PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
 	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
-	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(PlayerCameraManager->GetActorForwardVector() * Velocity);
+	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(PlayerCameraManager->GetActorForwardVector() * Velocity + PlayerCharacter->GetVelocity());
 }
 
 
@@ -131,7 +150,7 @@ void AShooterPlayerController::Shoot()
 		{
 			RandomSpreadX = FMath::RandRange(-RifleSpread, RifleSpread);
 			RandomSpreadY = FMath::RandRange(-RifleSpread, RifleSpread);
-			ShootHitscan(RandomSpreadX, RandomSpreadY);
+			ShootHitscan(RandomSpreadX, RandomSpreadY, RifleDamage);
 			RifleAmmo--;
 			FireRate = RifleFireRate;
 		}
@@ -143,7 +162,7 @@ void AShooterPlayerController::Shoot()
 			{
 				RandomSpreadX = FMath::RandRange(-ShotgunSpread, ShotgunSpread);
 				RandomSpreadY = FMath::RandRange(-ShotgunSpread, ShotgunSpread);
-				ShootHitscan(RandomSpreadX, RandomSpreadY);
+				ShootHitscan(RandomSpreadX, RandomSpreadY, ShotgunPelletDamage);
 			}
 			ShotgunAmmo--;
 		}

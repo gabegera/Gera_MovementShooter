@@ -9,7 +9,7 @@ ATestDummyCharacter::ATestDummyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 }
 
@@ -36,10 +36,14 @@ void ATestDummyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 float ATestDummyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	// TODO: Change Damage Text
+	
+	GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "DUMMY TOOK DAMAGE");
 
-	// TODO: Add Hit Reaction Animation
-
-	return 0.0f;
+	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (HealthComponent)
+	{
+		HealthComponent->TakeDamage(Damage);
+	}
+	return Damage;
 }
 

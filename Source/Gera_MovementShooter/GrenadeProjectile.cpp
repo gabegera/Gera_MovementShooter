@@ -22,6 +22,14 @@ void AGrenadeProjectile::BeginPlay()
 	
 }
 
+void AGrenadeProjectile::DealDamage(AActor* Collider, AActor* PlayerCharacter, AController* PlayerController)
+{
+	if (Collider && IsValid(Collider->GetComponentByClass<UHealthComponent>()) && PlayerCharacter && PlayerController)
+	{
+		Collider->TakeDamage(MaxDamage, FDamageEvent(), PlayerController, PlayerCharacter);
+	}
+}
+
 // Called every frame
 void AGrenadeProjectile::Tick(float DeltaTime)
 {
