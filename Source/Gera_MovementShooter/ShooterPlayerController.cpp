@@ -73,8 +73,31 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
-void AShooterPlayerController::ShootHitscan(float Spread)
+void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY)
 {
+	FHitResult Hit;
+
+	FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
+	FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f + PlayerCameraManager->GetActorRightVector() * SpreadX + PlayerCameraManager->GetActorUpVector() * SpreadY;
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+}
+
+void AShooterPlayerController::ChargeShot(float TimeToCharge)
+{
+	if (CurrentPistolCharge < TimeToCharge)
+	{
+		CurrentPistolCharge += CurrentDeltaTime;
+	}
+	else
+	{
+		CurrentPistolCharge = TimeToCharge;
+	}
+}
+
+void AShooterPlayerController::FireChargedShot(float Charge)
+{
+	CurrentPistolCharge = 0.0f;
+
 	FHitResult Hit;
 
 	FVector TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
@@ -82,34 +105,92 @@ void AShooterPlayerController::ShootHitscan(float Spread)
 	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
 }
 
-void AShooterPlayerController::ShootProjectile()
+void AShooterPlayerController::ShootProjectile(float Velocity)
 {
+	AActor* SpawnedGrenade;
+	SpawnedGrenade = GetWorld()->SpawnActor(GrenadeProjectile);
 
+	if (!SpawnedGrenade) return;
+
+	SpawnedGrenade->SetActorLocation(PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
+	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
+	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(PlayerCameraManager->GetActorForwardVector() * Velocity);
 }
 
 
 
-void AShooterPlayerController::Shoot(bool isProjectile, bool isShotgun, float Spread)
+void AShooterPlayerController::Shoot()
 {
-	if (RifleAmmo > 0 && FireRate <= 0)
-	{
+	float RandomSpreadX;
+	float RandomSpreadY;
 
-		if (isProjectile)
+	switch (EquippedWeapon)
+	{
+	case WeaponType::RIFLE:
+		if (RifleAmmo > 0 && FireRate <= 0)
 		{
-			ShootProjectile();
+			RandomSpreadX = FMath::RandRange(-RifleSpread, RifleSpread);
+			RandomSpreadY = FMath::RandRange(-RifleSpread, RifleSpread);
+			ShootHitscan(RandomSpreadX, RandomSpreadY);
+			RifleAmmo--;
+			FireRate = RifleFireRate;
 		}
-		else
+		break;
+	case WeaponType::SHOTGUN:
+		if (ShotgunAmmo > 0)
 		{
-			ShootHitscan(Spread);
+			for (int i = 0; i < ShotgunPellets; i++)
+			{
+				RandomSpreadX = FMath::RandRange(-ShotgunSpread, ShotgunSpread);
+				RandomSpreadY = FMath::RandRange(-ShotgunSpread, ShotgunSpread);
+				ShootHitscan(RandomSpreadX, RandomSpreadY);
+			}
+			ShotgunAmmo--;
 		}
-		
-		RifleAmmo--;
-		FireRate = DefaultFireRate;
+		break;
+	case WeaponType::GRENADELAUNCHER:
+		if (GrenadeLauncherAmmo > 0)
+		{
+			ShootProjectile(GrenadeVelocity);
+			GrenadeLauncherAmmo--;
+		}
+		break;
+	default:
+		break;
 	}
+}
+
+void AShooterPlayerController::EquipPistol()
+{
+	EquippedWeapon = WeaponType::PISTOL;
+}
+
+void AShooterPlayerController::EquipRifle()
+{
+	EquippedWeapon = WeaponType::RIFLE;
+}
+
+void AShooterPlayerController::EquipShotgun()
+{
+	EquippedWeapon = WeaponType::SHOTGUN;
+}
+
+void AShooterPlayerController::EquipGrenadeLauncher()
+{
+	EquippedWeapon = WeaponType::GRENADELAUNCHER;
+}
+
+void AShooterPlayerController::AddAmmo(int RifleAddition, int ShotgunAddition, int GrenadeLauncherAddition, PickupType Type)
+{
+	if (Type == PickupType::RIFLE_AMMO) RifleAmmo += RifleAddition;
+	else if (Type == PickupType::SHOTGUN_AMMO) ShotgunAmmo += ShotgunAddition;
+	else if (Type == PickupType::GRENADE_LAUNCHER_AMMO) GrenadeLauncherAmmo += GrenadeLauncherAddition;
 }
 
 void AShooterPlayerController::Tick(float DeltaTime)
 {
+	CurrentDeltaTime = DeltaTime;
+
 	if (!PlayerCharacter->GetCharacterMovement()->IsFalling() && DashCooldown > 0.0f)
 	{
 		DashCooldown -= DeltaTime;
