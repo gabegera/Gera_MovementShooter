@@ -59,13 +59,16 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AActor> WeaponActor;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UStaticMesh* StaticMesh;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
 	EProjectileType ProjectileType = EProjectileType::None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))
-	TSoftClassPtr<AActor> ProjectileActor;
+	TSubclassOf<AActor> ProjectileActor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
@@ -80,8 +83,8 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	float FireRate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::AutomaticShotgun && WeaponType != EWeaponType::SemiAutoShotgun && WeaponType != EWeaponType::Melee", EditConditionHides))
-	float Spread;
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	float MaxSpread;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "Set to 0 for infinite ammo.",
@@ -92,9 +95,9 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	meta = (EditCondition = "WeaponType == EWeaponType::AutomaticShotgun || WeaponType == EWeaponType::SemiAutoShotgun", EditConditionHides))
 	int PelletCount;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType == EWeaponType::AutomaticShotgun || WeaponType == EWeaponType::SemiAutoShotgun", EditConditionHides))
-	float ShotgunSpread;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	// meta = (EditCondition = "WeaponType == EWeaponType::AutomaticShotgun || WeaponType == EWeaponType::SemiAutoShotgun", EditConditionHides))
+	// float ShotgunSpread;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))

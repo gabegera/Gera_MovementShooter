@@ -27,14 +27,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon);
 
-	UPROPERTY(BlueprintReadOnly)
-	int PrimaryAmmo = 30;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<EAmmoType, int> AmmoMap;
 
-	UPROPERTY(BlueprintReadOnly)
-	int SecondaryAmmo = 12;
-
-	UPROPERTY(BlueprintReadOnly)
-	int HeavyAmmo = 4;
 
 public:	
 	// Called every frame
@@ -49,4 +44,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle HeavyWeapon;
 
+	UFUNCTION(BlueprintCallable)
+	void AddAmmo(EAmmoType AmmoType, int AmmoAmount);
+	
 };

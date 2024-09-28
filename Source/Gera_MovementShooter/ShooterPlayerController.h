@@ -48,6 +48,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	float MouseSensitivity = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UArrowComponent* MuzzleArrowComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float CurrentPistolCharge = 0.0f;
 	
@@ -72,28 +75,22 @@ protected:
 	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable)
-	void ShootHitscan(float SpreadX, float SpreadY, float Damage);
+	void ShootHitscan(float SpreadX, float SpreadY, float Damage, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
-	void ChargeShot(float TimeToCharge);
+	void ChargeShot(float MinCharge, float MaxCharge);
 
 	UFUNCTION(BlueprintCallable)
-	void FireChargedShot(float Charge);
+	void FireChargedShot(float Charge, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetPistolCharge() { CurrentPistolCharge = 0; }
 
 	UFUNCTION(BlueprintCallable)
-	void ShootProjectile(float Velocity);
+	void ShootProjectile(float Velocity, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
-
-	// UFUNCTION(BlueprintCallable)
-	// void EquipWeapon(EWeaponType NewWeaponType);
-
-	UFUNCTION(BlueprintCallable)
-	void AddAmmo(int RifleAddition, int ShotgunAddition, int GrenadeLauncherAddition, PickupType Type);
 
 public:
 	// Called every frame

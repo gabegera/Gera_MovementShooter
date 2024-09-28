@@ -13,7 +13,7 @@ APickupObject::APickupObject()
 	RootComponent->SetMobility(EComponentMobility::Movable);
 
 	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pickup Mesh"), false);
-	PickupMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	PickupMesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -25,45 +25,61 @@ void APickupObject::BeginPlay()
 
 void APickupObject::OnConstruction(const FTransform& Transform)
 {
-	switch (CurrentPickupType)
+	if (PickupType == EPickupType::Ammo)
 	{
-	case PickupType::PISTOL_WEAPON:
-		PickupMesh->SetOverlayMaterial(PistolOutlineMaterial);
-		PickupMesh->SetStaticMesh(PistolMesh);
+		switch (AmmoType)
+		{
+		case EAmmoType::PistolAmmo:
+			PickupMesh->SetOverlayMaterial(SecondaryOutlineMaterial);
+			PickupMesh->SetStaticMesh(PistolAmmoMesh);
+			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+			break;
+		case EAmmoType::RifleAmmo:
+			PickupMesh->SetOverlayMaterial(PrimaryOutlineMaterial);
+			PickupMesh->SetStaticMesh(RifleAmmoMesh);
+			PickupMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
+			break;
+		case EAmmoType::ShotgunAmmo:
+			PickupMesh->SetOverlayMaterial(PrimaryOutlineMaterial);
+			PickupMesh->SetStaticMesh(ShotgunAmmoMesh);
+			PickupMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
+			break;
+		case EAmmoType::SniperAmmo:
+			PickupMesh->SetOverlayMaterial(HeavyOutlineMaterial);
+			PickupMesh->SetStaticMesh(SniperAmmoMesh);
+			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+			break;
+		case EAmmoType::ExplosiveAmmo:
+			PickupMesh->SetOverlayMaterial(HeavyOutlineMaterial);
+			PickupMesh->SetStaticMesh(ExplosiveAmmoMesh);
+			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+			break;
+		default: ;
+		}		
+	}
+	else if (PickupType == EPickupType::Weapon)
+	{
+		FWeaponData* WeaponData = WeaponPickup.GetRow<FWeaponData>("");
+
+		if(!WeaponData) return;
+		
+		PickupMesh->SetStaticMesh(WeaponData->StaticMesh);
 		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		break;
-	case PickupType::RIFLE_WEAPON:
-		PickupMesh->SetOverlayMaterial(RifleOutlineMaterial);
-		PickupMesh->SetStaticMesh(RifleMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		break;
-	case PickupType::SHOTGUN_WEAPON:
-		PickupMesh->SetOverlayMaterial(ShotgunOutlineMaterial);
-		PickupMesh->SetStaticMesh(ShotgunMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		break;
-	case PickupType::GRENADE_LAUNCHER_WEAPON:
-		PickupMesh->SetOverlayMaterial(GrenadeLauncherOutlineMaterial);
-		PickupMesh->SetStaticMesh(GrenadeLauncherMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		break;
-	case PickupType::RIFLE_AMMO:
-		PickupMesh->SetOverlayMaterial(RifleOutlineMaterial);
-		PickupMesh->SetStaticMesh(RifleAmmoMesh);
-		PickupMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
-		break;
-	case PickupType::SHOTGUN_AMMO:
-		PickupMesh->SetOverlayMaterial(ShotgunOutlineMaterial);
-		PickupMesh->SetStaticMesh(ShotgunAmmoMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-		break;
-	case PickupType::GRENADE_LAUNCHER_AMMO:
-		PickupMesh->SetOverlayMaterial(GrenadeLauncherOutlineMaterial);
-		PickupMesh->SetStaticMesh(GrenadeAmmoMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		break;
-	default:
-		break;
+
+		switch (WeaponData->WeaponSlot)
+		{
+		case EWeaponSlot::Primary:
+			PickupMesh->SetOverlayMaterial(PrimaryOutlineMaterial);
+			break;
+		case EWeaponSlot::Secondary:
+			PickupMesh->SetOverlayMaterial(SecondaryOutlineMaterial);
+			break;
+		case EWeaponSlot::Heavy:
+			PickupMesh->SetOverlayMaterial(HeavyOutlineMaterial);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -72,6 +88,6 @@ void APickupObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	AddActorWorldRotation(FRotator(0.0f, 1.0f, 0.0f));
+	AddActorWorldRotation(FRotator(0.0f, 90.0f * DeltaTime, 0.0f));
 }
 

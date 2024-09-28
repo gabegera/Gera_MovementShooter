@@ -3,19 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponData.h"
 #include "GameFramework/Actor.h"
 #include "PickupObject.generated.h"
 
 UENUM(BlueprintType)
-enum class PickupType : uint8
+enum class EPickupType : uint8
 {
-	PISTOL_WEAPON = 0 UMETA(DisplayName = "Weapon: Pistol"),
-	RIFLE_WEAPON = 1 UMETA(DisplayName = "Weapon: Rifle"),
-	SHOTGUN_WEAPON = 2 UMETA(DisplayName = "Weapon: Shotgun"),
-	GRENADE_LAUNCHER_WEAPON = 3 UMETA(DisplayName = "Weapon: Grenade Launcher"),
-	RIFLE_AMMO = 4 UMETA(DisplayName = "Ammo: Rifle"),
-	SHOTGUN_AMMO = 5 UMETA(DisplayName = "Ammo: Shotgun"),
-	GRENADE_LAUNCHER_AMMO = 6 UMETA(DisplayName = "Ammo: Grenade Launcher"),
+	Ammo = 0 UMETA(DisplayName = "Ammo Pickup"),
+	Weapon = 1 UMETA(DisplayName = "Weapon Pickup"),
+	Equipment = 2 UMETA(DisplayName = "Equipment Pickup"),
+	Buff = 3 UMETA(DisplayName = "Buff Pickup"),
 };
 
 UCLASS()
@@ -37,42 +35,46 @@ protected:
 	UStaticMeshComponent* PickupMesh = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
-	UStaticMesh* PistolMesh = nullptr;
-
+	UStaticMesh* PistolAmmoMesh = nullptr;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
 	UStaticMesh* RifleAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
-	UStaticMesh* RifleMesh = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
 	UStaticMesh* ShotgunAmmoMesh = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
-	UStaticMesh* ShotgunMesh = nullptr;
+	UStaticMesh* SniperAmmoMesh = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
-	UStaticMesh* GrenadeAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
-	UStaticMesh* GrenadeLauncherMesh = nullptr;
+	UStaticMesh* ExplosiveAmmoMesh = nullptr;
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInstance* PistolOutlineMaterial = nullptr;
+	UMaterialInstance* PrimaryOutlineMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInstance* RifleOutlineMaterial = nullptr;
+	UMaterialInstance* SecondaryOutlineMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInstance* ShotgunOutlineMaterial = nullptr;
+	UMaterialInstance* HeavyOutlineMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInstance* GrenadeLauncherOutlineMaterial = nullptr;
+	UMaterialInstance* EquipmentOutlineMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstance* BuffOutlineMaterial = nullptr;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
-	PickupType CurrentPickupType;
+	EPickupType PickupType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
+	EAmmoType AmmoType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
+	FDataTableRowHandle WeaponPickup;
+	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ammo")
 	int RifleAmmo = 20;
