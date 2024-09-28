@@ -7,20 +7,13 @@
 #include "ShooterPlayerCharacter.h"
 #include "GrenadeProjectile.h"
 #include "PickupObject.h"
+#include "WeaponData.h"
 #include "HealthComponent.h"
+#include "Components/ArrowComponent.h"
 #include "Engine/DamageEvents.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ShooterPlayerController.generated.h"
-
-UENUM(BlueprintType)
-enum class WeaponType : uint8
-{
-	PISTOL = 0 UMETA(DisplayName = "Pistol"),
-	RIFLE = 1 UMETA(DisplayName = "Rifle"),
-	SHOTGUN = 2 UMETA(DisplayName = "Shotgun"),
-	GRENADELAUNCHER = 3 UMETA(DisplayName = "Grenade Launcher"),
-};
 
 UCLASS()
 class GERA_MOVEMENTSHOOTER_API AShooterPlayerController : public APlayerController
@@ -34,8 +27,27 @@ protected:
 
 	virtual void BeginPlay() override;
 
-
+	UPROPERTY(BlueprintReadOnly)
 	AShooterPlayerCharacter* PlayerCharacter;
+
+	UPROPERTY(BlueprintReadOnly)
+	UArrowComponent* WeaponMuzzleArrowComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Actors")
+	TSubclassOf<AActor> KnifeActor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Actors")
+	TSubclassOf<AActor> PistolActor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Actors")
+	TSubclassOf<AActor> RifleActor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Actors")
+	TSubclassOf<AActor> ShotgunActor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Actors")
+	TSubclassOf<AActor> GrenadeLauncherActor;
+
 
 	float CurrentDeltaTime;
 
@@ -61,7 +73,7 @@ protected:
 	float MouseSensitivity = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shooting/Weapons")
-	WeaponType EquippedWeapon;
+	EWeaponType EquippedWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float CurrentPistolCharge = 0.0f;
@@ -140,22 +152,16 @@ protected:
 	void FireChargedShot(float Charge);
 
 	UFUNCTION(BlueprintCallable)
+	void ResetPistolCharge() { CurrentPistolCharge = 0; }
+
+	UFUNCTION(BlueprintCallable)
 	void ShootProjectile(float Velocity);
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
 
 	UFUNCTION(BlueprintCallable)
-	void EquipPistol();
-
-	UFUNCTION(BlueprintCallable)
-	void EquipRifle();
-
-	UFUNCTION(BlueprintCallable)
-	void EquipShotgun();
-
-	UFUNCTION(BlueprintCallable)
-	void EquipGrenadeLauncher();
+	void EquipWeapon(EWeaponType NewWeaponType);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetFireRate() { FireRate = 0; }

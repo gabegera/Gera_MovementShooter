@@ -11,12 +11,29 @@ AShooterPlayerCharacter::AShooterPlayerCharacter()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	CameraComponent->SetupAttachment(GetCapsuleComponent());
+	CameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
+	CameraComponent->bUsePawnControlRotation = true;
+
+	GetMesh()->AttachToComponent(CameraComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	WeaponChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponChild"));
+	WeaponChildComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "weaponsocket_r");
+	
+
 }
 
 // Called when the game starts or when spawned
 void AShooterPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (IsValid(WeaponChildComponent) && IsValid(WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>()))
+	{
+		WeaponChildMesh = WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>();
+	}
+	else return;
 	
 }
 

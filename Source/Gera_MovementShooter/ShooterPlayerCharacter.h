@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HealthComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Camera/CameraComponent.h"
 #include "ShooterPlayerCharacter.generated.h"
+
 
 UCLASS()
 class GERA_MOVEMENTSHOOTER_API AShooterPlayerCharacter : public ACharacter
@@ -16,6 +19,9 @@ public:
 	// Sets default values for this character's properties
 	AShooterPlayerCharacter();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UChildActorComponent* WeaponChildComponent = nullptr;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -24,7 +30,13 @@ protected:
 	void Look(float InputX, float InputY);*/
 
 	UPROPERTY(EditAnywhere)
-	UHealthComponent* HealthComponent;
+	UHealthComponent* HealthComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* CameraComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	USkeletalMeshComponent* WeaponChildMesh = nullptr;
 
 
 public:	

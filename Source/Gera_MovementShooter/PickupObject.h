@@ -36,14 +36,39 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* PickupMesh = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInterface* RifleAmmoMaterial = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* PistolMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* RifleAmmoMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* RifleMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* ShotgunAmmoMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* ShotgunMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* GrenadeAmmoMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMesh* GrenadeLauncherMesh = nullptr;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInterface* ShotgunAmmoMaterial = nullptr;
+	UMaterialInstance* PistolOutlineMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInterface* GrenadeLauncherAmmoMaterial = nullptr;
+	UMaterialInstance* RifleOutlineMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstance* ShotgunOutlineMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	UMaterialInstance* GrenadeLauncherOutlineMaterial = nullptr;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
