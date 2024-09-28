@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "HealthComponent.h"
+#include "InventoryComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "ShooterPlayerCharacter.generated.h"
@@ -22,6 +23,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UChildActorComponent* WeaponChildComponent = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInventoryComponent* InventoryComponent = nullptr;
+
+	UPROPERTY(BlueprintReadOnly)
+	FDataTableRowHandle EquippedWeapon;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,6 +44,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	USkeletalMeshComponent* WeaponChildMesh = nullptr;
+
+	UFUNCTION(BlueprintCallable)
+	void EquipWeapon(FDataTableRowHandle Weapon);
 
 
 public:	

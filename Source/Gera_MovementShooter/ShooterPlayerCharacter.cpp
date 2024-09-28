@@ -20,7 +20,8 @@ AShooterPlayerCharacter::AShooterPlayerCharacter()
 
 	WeaponChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponChild"));
 	WeaponChildComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "weaponsocket_r");
-	
+
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
 }
 
@@ -33,15 +34,13 @@ void AShooterPlayerCharacter::BeginPlay()
 	{
 		WeaponChildMesh = WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>();
 	}
-	else return;
+
+	if (IsValid(InventoryComponent))
+	{
+		EquipWeapon(InventoryComponent->PrimaryWeapon);
+	}
 	
 }
-
-//void AShooterPlayerCharacter::Look(float InputX, float InputY)
-//{
-//	AddControllerYawInput(InputX);
-//	AddControllerPitchInput(InputY);
-//}
 
 float AShooterPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -53,6 +52,16 @@ float AShooterPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const
 		HealthComponent->TakeDamage(Damage);
 	}
 	return Damage;
+}
+
+void AShooterPlayerCharacter::EquipWeapon(FDataTableRowHandle Weapon)
+{
+	EquippedWeapon = Weapon;
+
+	if (auto EquippedWeaponData = EquippedWeapon.GetRow<FWeaponData>(""))
+    	{
+    		WeaponChildComponent->SetChildActorClass(EquippedWeaponData->WeaponActor);
+    	}
 }
 
 // Called every frame

@@ -10,9 +10,6 @@ void AShooterPlayerController::BeginPlay()
 
 	PlayerCharacter = GetPawn<AShooterPlayerCharacter>();
 
-	EquipWeapon(EquippedWeapon);
-	
-
 	// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
@@ -82,78 +79,78 @@ void AShooterPlayerController::StopCrouch()
 
 void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, float Damage)
 {
-	FHitResult DebugHit;
-	FHitResult Hit;
-
-	FVector TraceStart;
-	if (WeaponMuzzleArrowComponent)
-	{
-		TraceStart = WeaponMuzzleArrowComponent->GetComponentLocation();
-	}
-	else
-	{
-		TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
-	}
-
-	FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f + PlayerCameraManager->GetActorRightVector() * SpreadX + PlayerCameraManager->GetActorUpVector() * SpreadY;
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugHit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
-
-	FCollisionQueryParams IgnorePlayer;
-	IgnorePlayer.AddIgnoredActor(PlayerCharacter->GetUniqueID());
-
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_PhysicsBody, IgnorePlayer);
-
-	AActor* ActorHit = Hit.GetActor();
-
-	// If Hit has Health, Deal Damage
-	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
-	{
-		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT DUMMY");
-
-		ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
-	}
-	//If Hit Is Simulating Physics, Add Impulse
-	else if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
-	{
-		if (ActorHit->GetComponentByClass<UStaticMeshComponent>()->IsSimulatingPhysics())
-		{
-			ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
-		}
-	}
+	// FHitResult DebugHit;
+	// FHitResult Hit;
+	//
+	// FVector TraceStart;
+	// if (WeaponMuzzleArrowComponent)
+	// {
+	// 	TraceStart = WeaponMuzzleArrowComponent->GetComponentLocation();
+	// }
+	// else
+	// {
+	// 	TraceStart = PlayerCameraManager->GetCameraLocation() - PlayerCharacter->GetActorUpVector() * 10;
+	// }
+	//
+	// FVector TraceEnd = PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 10000.0f + PlayerCameraManager->GetActorRightVector() * SpreadX + PlayerCameraManager->GetActorUpVector() * SpreadY;
+	// DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugHit.bBlockingHit ? FColor::Blue : FColor::Red, false, 0.5f, 0, 1.0f);
+	//
+	// FCollisionQueryParams IgnorePlayer;
+	// IgnorePlayer.AddIgnoredActor(PlayerCharacter->GetUniqueID());
+	//
+	// GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_PhysicsBody, IgnorePlayer);
+	//
+	// AActor* ActorHit = Hit.GetActor();
+	//
+	// // If Hit has Health, Deal Damage
+	// if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT DUMMY");
+	//
+	// 	ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
+	// }
+	// //If Hit Is Simulating Physics, Add Impulse
+	// else if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
+	// {
+	// 	if (ActorHit->GetComponentByClass<UStaticMeshComponent>()->IsSimulatingPhysics())
+	// 	{
+	// 		ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
+	// 	}
+	// }
 }
 
 void AShooterPlayerController::ChargeShot(float TimeToCharge)
 {
-	if (CurrentPistolCharge < TimeToCharge)
-	{
-		CurrentPistolCharge += CurrentDeltaTime;
-	}
-	else
-	{
-		CurrentPistolCharge = TimeToCharge;
-	}
+	// if (CurrentPistolCharge < TimeToCharge)
+	// {
+	// 	CurrentPistolCharge += CurrentDeltaTime;
+	// }
+	// else
+	// {
+	// 	CurrentPistolCharge = TimeToCharge;
+	// }
 }
 
 void AShooterPlayerController::FireChargedShot(float Charge)
 {
-	CurrentPistolCharge = 0.0f;
-
-	float Damage = Charge / PistolChargeSpeed * PistolMaxDamage;
-
-	ShootHitscan(0, 0, Damage);
+	// CurrentPistolCharge = 0.0f;
+	//
+	// float Damage = Charge / PistolChargeSpeed * PistolMaxDamage;
+	//
+	// ShootHitscan(0, 0, Damage);
 }
 
 void AShooterPlayerController::ShootProjectile(float Velocity)
 {
-	AActor* SpawnedGrenade;
-	SpawnedGrenade = GetWorld()->SpawnActor(GrenadeProjectile);
-
-	if (!SpawnedGrenade) return;
-
-	SpawnedGrenade->SetActorLocation(PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
-	SpawnedGrenade->SetActorRotation(PlayerCameraManager->GetCameraRotation());
-	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
-	SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(PlayerCameraManager->GetActorForwardVector() * Velocity + PlayerCharacter->GetVelocity());
+	// AActor* SpawnedGrenade;
+	// SpawnedGrenade = GetWorld()->SpawnActor(GrenadeProjectile);
+	//
+	// if (!SpawnedGrenade) return;
+	//
+	// SpawnedGrenade->SetActorLocation(PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
+	// SpawnedGrenade->SetActorRotation(PlayerCameraManager->GetCameraRotation());
+	// SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
+	// SpawnedGrenade->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(PlayerCameraManager->GetActorForwardVector() * Velocity + PlayerCharacter->GetVelocity());
 }
 
 
@@ -199,84 +196,84 @@ void AShooterPlayerController::Shoot()
 	// }
 }
 
-void AShooterPlayerController::EquipWeapon(EWeaponType NewWeaponType)
-{
-	EquippedWeapon = NewWeaponType;
+// void AShooterPlayerController::EquipWeapon(EWeaponType NewWeaponType)
+// {
+// 	// EquippedWeapon = NewWeaponType;
+//
+// 	// switch (NewWeaponType)
+// 	// {
+// 	// case EWeaponType::KNIFE:
+// 	// 	if (IsValid(KnifeActor))
+// 	// 	{
+// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(KnifeActor);
+// 	// 		WeaponMuzzleArrowComponent = nullptr;
+// 	// 	}
+// 	// 	break;
+// 	// case EWeaponType::PISTOL:
+// 	// 	if (IsValid(PistolActor))
+// 	// 	{
+// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(PistolActor);
+// 	// 	}
+// 	// 	else WeaponMuzzleArrowComponent = nullptr;
+// 	// 	break;
+// 	// case EWeaponType::RIFLE:
+// 	// 	if (IsValid(RifleActor))
+// 	// 	{
+// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(RifleActor);
+// 	// 	}
+// 	// 	else WeaponMuzzleArrowComponent = nullptr;
+// 	// 	break;
+// 	// case EWeaponType::SHOTGUN:
+// 	// 	if (IsValid(ShotgunActor))
+// 	// 	{
+// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(ShotgunActor);
+// 	// 	}
+// 	// 	else WeaponMuzzleArrowComponent = nullptr;
+// 	// 	break;
+// 	// case EWeaponType::GRENADELAUNCHER:
+// 	// 	if (IsValid(GrenadeLauncherActor))
+// 	// 	{
+// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(GrenadeLauncherActor);
+// 	// 	}
+// 	// 	else WeaponMuzzleArrowComponent = nullptr;
+// 	// 	break;
+// 	// default:
+// 	// 	break;
+// 	// }
+// 	//
+// 	// if (NewWeaponType != EWeaponType::KNIFE && PlayerCharacter->WeaponChildComponent)
+// 	// {
+// 	// 	WeaponMuzzleArrowComponent = PlayerCharacter->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>();
+// 	// }
+// }
 
-	// switch (NewWeaponType)
+void AShooterPlayerController::AddAmmo(int RifleAddition, int ShotgunAddition, int GrenadeLauncherAddition, PickupType Type)
+{
+	// switch (Type)
 	// {
-	// case EWeaponType::KNIFE:
-	// 	if (IsValid(KnifeActor))
-	// 	{
-	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(KnifeActor);
-	// 		WeaponMuzzleArrowComponent = nullptr;
-	// 	}
+	// case PickupType::PISTOL_WEAPON:
 	// 	break;
-	// case EWeaponType::PISTOL:
-	// 	if (IsValid(PistolActor))
-	// 	{
-	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(PistolActor);
-	// 	}
-	// 	else WeaponMuzzleArrowComponent = nullptr;
+	// case PickupType::RIFLE_WEAPON:
+	// 	RifleAmmo += RifleAddition;
 	// 	break;
-	// case EWeaponType::RIFLE:
-	// 	if (IsValid(RifleActor))
-	// 	{
-	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(RifleActor);
-	// 	}
-	// 	else WeaponMuzzleArrowComponent = nullptr;
+	// case PickupType::SHOTGUN_WEAPON:
+	// 	ShotgunAmmo += ShotgunAddition;
 	// 	break;
-	// case EWeaponType::SHOTGUN:
-	// 	if (IsValid(ShotgunActor))
-	// 	{
-	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(ShotgunActor);
-	// 	}
-	// 	else WeaponMuzzleArrowComponent = nullptr;
+	// case PickupType::GRENADE_LAUNCHER_WEAPON:
+	// 	GrenadeLauncherAmmo += GrenadeLauncherAddition;
 	// 	break;
-	// case EWeaponType::GRENADELAUNCHER:
-	// 	if (IsValid(GrenadeLauncherActor))
-	// 	{
-	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(GrenadeLauncherActor);
-	// 	}
-	// 	else WeaponMuzzleArrowComponent = nullptr;
+	// case PickupType::RIFLE_AMMO:
+	// 	RifleAmmo += RifleAddition;
+	// 	break;
+	// case PickupType::SHOTGUN_AMMO:
+	// 	ShotgunAmmo += ShotgunAddition;
+	// 	break;
+	// case PickupType::GRENADE_LAUNCHER_AMMO:
+	// 	GrenadeLauncherAmmo += GrenadeLauncherAddition;
 	// 	break;
 	// default:
 	// 	break;
 	// }
-	//
-	// if (NewWeaponType != EWeaponType::KNIFE && PlayerCharacter->WeaponChildComponent)
-	// {
-	// 	WeaponMuzzleArrowComponent = PlayerCharacter->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>();
-	// }
-}
-
-void AShooterPlayerController::AddAmmo(int RifleAddition, int ShotgunAddition, int GrenadeLauncherAddition, PickupType Type)
-{
-	switch (Type)
-	{
-	case PickupType::PISTOL_WEAPON:
-		break;
-	case PickupType::RIFLE_WEAPON:
-		RifleAmmo += RifleAddition;
-		break;
-	case PickupType::SHOTGUN_WEAPON:
-		ShotgunAmmo += ShotgunAddition;
-		break;
-	case PickupType::GRENADE_LAUNCHER_WEAPON:
-		GrenadeLauncherAmmo += GrenadeLauncherAddition;
-		break;
-	case PickupType::RIFLE_AMMO:
-		RifleAmmo += RifleAddition;
-		break;
-	case PickupType::SHOTGUN_AMMO:
-		ShotgunAmmo += ShotgunAddition;
-		break;
-	case PickupType::GRENADE_LAUNCHER_AMMO:
-		GrenadeLauncherAmmo += GrenadeLauncherAddition;
-		break;
-	default:
-		break;
-	}
 }
 
 void AShooterPlayerController::Tick(float DeltaTime)
@@ -291,5 +288,5 @@ void AShooterPlayerController::Tick(float DeltaTime)
 		//GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Dash Cooldown = " + DashText));
 	}
 
-	if (FireRate > 0) FireRate -= DeltaTime;
+	// if (FireRate > 0) FireRate -= DeltaTime;
 }

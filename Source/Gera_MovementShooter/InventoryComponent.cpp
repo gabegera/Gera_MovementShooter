@@ -18,11 +18,24 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
+
+void UInventoryComponent::SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon)
+{
+	switch (WeaponSlot)
+	{
+	case EWeaponSlot::Primary:
+		PrimaryWeapon = NewWeapon;
+		break;
+	case EWeaponSlot::Secondary:
+		SecondaryWeapon = NewWeapon;
+		break;
+	case EWeaponSlot::Heavy:
+		HeavyWeapon = NewWeapon;
+		break;
+	}
+}
 
 // Called every frame
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
