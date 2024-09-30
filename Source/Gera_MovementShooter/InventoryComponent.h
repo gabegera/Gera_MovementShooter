@@ -27,7 +27,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
 
 
@@ -45,6 +45,12 @@ public:
 	FDataTableRowHandle HeavyWeapon;
 
 	UFUNCTION(BlueprintCallable)
+	int GetAmmo(EAmmoType AmmoType);
+	
+	UFUNCTION(BlueprintCallable)
 	void AddAmmo(EAmmoType AmmoType, int AmmoAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveAmmo(EAmmoType AmmoType, int AmmoAmount);
 	
 };

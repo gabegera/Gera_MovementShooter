@@ -9,12 +9,6 @@ UInventoryComponent::UInventoryComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	AmmoMap.Add(EAmmoType::PistolAmmo, 20);
-	AmmoMap.Add(EAmmoType::RifleAmmo, 60);
-	AmmoMap.Add(EAmmoType::ShotgunAmmo, 16);
-	AmmoMap.Add(EAmmoType::SniperAmmo, 4);
-	AmmoMap.Add(EAmmoType::ExplosiveAmmo, 4);
 }
 
 
@@ -49,8 +43,23 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
+int UInventoryComponent::GetAmmo(EAmmoType AmmoType)
+{
+	return AmmoMap.FindRef(AmmoType);
+}
+
+
 void UInventoryComponent::AddAmmo(EAmmoType AmmoType, int AmmoAmount)
 {
-	AmmoMap.Add(AmmoType, AmmoAmount);
+	AmmoMap.Add(AmmoType, AmmoMap.FindRef(AmmoType) + AmmoAmount);
 }
+
+void UInventoryComponent::RemoveAmmo(EAmmoType AmmoType, int AmmoAmount)
+{
+	AmmoMap.Add(AmmoType, AmmoMap.FindRef(AmmoType) - AmmoAmount);
+}
+
+
+
+
 

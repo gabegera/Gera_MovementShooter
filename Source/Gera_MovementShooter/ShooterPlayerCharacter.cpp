@@ -3,6 +3,8 @@
 
 #include "ShooterPlayerCharacter.h"
 
+#include "PickupObject.h"
+
 // Sets default values
 AShooterPlayerCharacter::AShooterPlayerCharacter()
 {
@@ -30,6 +32,9 @@ void AShooterPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &AShooterPlayerCharacter::BeginOverlap);
+	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &AShooterPlayerCharacter::EndOverlap);
+
 	if (IsValid(WeaponChildComponent) && IsValid(WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>()))
 	{
 		WeaponChildMesh = WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>();
@@ -40,6 +45,22 @@ void AShooterPlayerCharacter::BeginPlay()
 		EquipWeapon(InventoryComponent->PrimaryWeapon);
 	}
 	
+}
+
+void AShooterPlayerCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->GetName().Contains("Pickup"))
+	{
+		PickupMap.Add(OtherActor, GetDistanceTo(OtherActor));
+	}
+}
+
+void AShooterPlayerCharacter::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor->GetName().Contains("Pickup"))
+	{
+		PickupMap.Remove(OtherActor);
+	}
 }
 
 float AShooterPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

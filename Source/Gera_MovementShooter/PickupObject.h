@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WeaponData.h"
 #include "GameFramework/Actor.h"
+#include "Components/SphereComponent.h"
 #include "PickupObject.generated.h"
 
 UENUM(BlueprintType)
@@ -29,7 +30,23 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
+	
+	UFUNCTION()
+	void BeginWeaponSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
+
+	UFUNCTION()
+	void EndWeaponSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	virtual void OnConstruction(const FTransform& Transform) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USphereComponent* WeaponSphereTrigger;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USphereComponent* PickupSphereTrigger;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* PickupMesh = nullptr;
@@ -74,16 +91,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
 	FDataTableRowHandle WeaponPickup;
-	
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ammo")
-	int RifleAmmo = 20;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ammo")
-	int ShotgunAmmo = 4;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ammo")
-	int GrenadeLauncherAmmo = 1;
 
 public:	
 	// Called every frame

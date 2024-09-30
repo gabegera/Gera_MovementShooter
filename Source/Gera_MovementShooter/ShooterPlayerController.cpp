@@ -172,23 +172,40 @@ void AShooterPlayerController::Shoot()
 		Origin = PlayerCharacter->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentTransform().GetLocation();
 	}
 	
+	if (PlayerCharacter->InventoryComponent->GetAmmo(EquippedWeaponData->AmmoType) <= 0) return;
+	
 	float RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
 	float RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
 
 	switch (EquippedProjectileType)
 	{
 	case EProjectileType::Hitscan:
-		ShootHitscan(RandomSpreadX, RandomSpreadY, EquippedDamage, Origin);
+		if (EquippedWeaponData->WeaponType == EWeaponType::AutomaticShotgun || EquippedWeaponData->WeaponType == EWeaponType::SemiAutoShotgun)
+		{
+			for (int i = 0; i < EquippedWeaponData->PelletCount; i++)
+			{
+				RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
+				RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
+				ShootHitscan(RandomSpreadX, RandomSpreadY, EquippedDamage, Origin);
+			}
+		}
+		else ShootHitscan(RandomSpreadX, RandomSpreadY, EquippedDamage, Origin);
+		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData->AmmoType, 1);
 		break;
+		
 	case EProjectileType::Projectile:
 		ShootProjectile(ProjectileVelocity, Origin);
+		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData->AmmoType, 1);
 		break;
+		
 	case EProjectileType::ChargedHitscan:
 		ChargeShot(MinCharge, MaxCharge);
 		break;
+		
 	case EProjectileType::ChargedProjectile:
 		ChargeShot(MinCharge, MaxCharge);
 		break;
+		
 	default:
 		break;
 	}
