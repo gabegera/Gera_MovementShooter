@@ -52,7 +52,13 @@ protected:
 	UArrowComponent* MuzzleArrowComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
-	float CurrentPistolCharge = 0.0f;
+	float CurrentWeaponCharge = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
+	float FireRate;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Shooting/Weapons")
+	bool SemiAutoCanFire;
 	
 
 
@@ -75,22 +81,28 @@ protected:
 	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable)
-	void ShootHitscan(float SpreadX, float SpreadY, float Damage, FVector ShotOrigin);
+	FWeaponData GetEquippedWeaponData() { return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>(""); }
 
 	UFUNCTION(BlueprintCallable)
-	void ChargeShot(float MinCharge, float MaxCharge);
+	void ShootHitscan(float SpreadX, float SpreadY, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
-	void FireChargedShot(float Charge, FVector ShotOrigin);
+	void ChargeShot(float MaxCharge);
 
 	UFUNCTION(BlueprintCallable)
-	void ResetPistolCharge() { CurrentPistolCharge = 0; }
+	void FireChargedShot(float Charge, float MinCharge, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
-	void ShootProjectile(float Velocity, FVector ShotOrigin);
+	void ResetPistolCharge() { CurrentWeaponCharge = 0; }
+
+	UFUNCTION(BlueprintCallable)
+	void ShootProjectile(float SpreadX, float SpreadY, float Velocity, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetWeapon();
 
 public:
 	// Called every frame

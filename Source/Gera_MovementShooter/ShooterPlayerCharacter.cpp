@@ -4,6 +4,7 @@
 #include "ShooterPlayerCharacter.h"
 
 #include "PickupObject.h"
+#include "ShooterPlayerController.h"
 
 // Sets default values
 AShooterPlayerCharacter::AShooterPlayerCharacter()

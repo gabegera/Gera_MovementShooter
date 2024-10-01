@@ -17,8 +17,6 @@ enum class EWeaponType : uint8
 	Melee = 0 UMETA(DisplayName = "Melee"),
 	SemiAutomatic = 1 UMETA(DisplayName = "Semi-Auto"),
 	Automatic = 2 UMETA(DisplayName = "Automatic"),
-	AutomaticShotgun = 3 UMETA(DisplayName = "Automatic Shotgun"),
-	SemiAutoShotgun = 4 UMETA(DisplayName = "Semi-Auto Shotgun"),
 };
 
 UENUM(BlueprintType)
@@ -27,8 +25,6 @@ enum class EProjectileType : uint8
 	None = 0 UMETA(DisplayName = "None"),
 	Hitscan = 1 UMETA(DisplayName = "Hitscan"),
 	Projectile = 2 UMETA(DisplayName = "Projectile"),
-	ChargedHitscan = 3 UMETA(DisplayName = "Charged Hitscan"),
-	ChargedProjectile = 4 UMETA(DisplayName = "Charged Projectile"),
 };
 
 UENUM(BlueprintType)
@@ -63,15 +59,15 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	UStaticMesh* StaticMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
 	EProjectileType ProjectileType = EProjectileType::None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))
+	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"))
 	TSubclassOf<AActor> ProjectileActor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
 	EAmmoType AmmoType = EAmmoType::None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -79,45 +75,48 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In RPM (Rounds Per Minute)",
-	EditCondition = "WeaponType == EWeaponType::Automatic || WeaponType == EWeaponType::AutomaticShotgun", EditConditionHides))
+	EditCondition = "WeaponType == EWeaponType::Automatic || WeaponType == EWeaponType::AutomaticShotgun"))
 	float FireRate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
 	float MaxSpread;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "Set to 0 for infinite ammo.",
-	EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	EditCondition = "WeaponType != EWeaponType::Melee"))
 	int MagazineCapacity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType == EWeaponType::AutomaticShotgun || WeaponType == EWeaponType::SemiAutoShotgun", EditConditionHides))
-	int PelletCount;
-
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	// meta = (EditCondition = "WeaponType == EWeaponType::AutomaticShotgun || WeaponType == EWeaponType::SemiAutoShotgun", EditConditionHides))
-	// float ShotgunSpread;
+	meta = (EditCondition = "WeaponType != Melee"))
+	bool IsShotgun;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))
+	meta = (EditCondition = "isShotgun"))
+	int PelletCount;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"))
 	float ProjectileVelocity;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool CanCharge = false;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In Seconds",
-	EditCondition = "ProjectileType == EProjectileType::ChargedHitscan || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))
+	EditCondition = "CanCharge"))
 	float MinChargeTime;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In Seconds",
-	EditCondition = "ProjectileType == EProjectileType::ChargedHitscan || ProjectileType == EProjectileType::ChargedProjectile", EditConditionHides))
+	EditCondition = "CanCharge"))
 	float MaxChargeTime;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee", EditConditionHides))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
 	bool IsExplosive = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee && IsExplosive", EditConditionHides))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee && IsExplosive"))
 	float ExplosionRadius = 0.0f;
 };

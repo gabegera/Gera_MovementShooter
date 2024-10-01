@@ -3,6 +3,7 @@
 
 #include "ShooterPlayerController.h"
 
+#include "IntVectorTypes.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -23,6 +24,7 @@ void AShooterPlayerController::BeginPlay()
 	}
 }
 
+
 void AShooterPlayerController::Move(float InputX, float InputY)
 {
 	if (!IsValid(PlayerCharacter)) return;
@@ -30,6 +32,7 @@ void AShooterPlayerController::Move(float InputX, float InputY)
 	PlayerCharacter->AddMovementInput(PlayerCharacter->GetActorRightVector(), InputX);
 	PlayerCharacter->AddMovementInput(PlayerCharacter->GetActorForwardVector(), InputY);
 }
+
 
 void AShooterPlayerController::Look(float InputX, float InputY)
 {
@@ -39,12 +42,14 @@ void AShooterPlayerController::Look(float InputX, float InputY)
 	PlayerCharacter->AddControllerPitchInput(InputY * MouseSensitivity);
 }
 
+
 void AShooterPlayerController::Jump()
 {
 	if (!IsValid(PlayerCharacter)) return;
 	
 	PlayerCharacter->Jump();
 }
+
 
 void AShooterPlayerController::Dash(float InputX, float InputY)
 {
@@ -69,17 +74,20 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 	
 }
 
+
 void AShooterPlayerController::Crouch()
 {
 	PlayerCharacter->Crouch();
 }
+
 
 void AShooterPlayerController::StopCrouch()
 {
 	PlayerCharacter->UnCrouch();
 }
 
-void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, float Damage, FVector ShotOrigin)
+
+void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, FVector ShotOrigin)
 {	
 	FHitResult DebugHit;
 	FHitResult Hit;
@@ -103,13 +111,16 @@ void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, float 
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECollisionChannel::ECC_PhysicsBody, IgnorePlayer);
 	
 	AActor* ActorHit = Hit.GetActor();
+
+	float Damage = GetEquippedWeaponData().Damage;
+	if (GetEquippedWeaponData().CanCharge == true) Damage *= CurrentWeaponCharge;
 	
 	// If Hit has Health, Deal Damage
 	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
 	{
-		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT DUMMY");
-	
-		ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
+		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT ACTOR");
+		
+		ActorHit->GetComponentByClass<UHealthComponent>()->TakeDamage(Damage);
 	}
 	//If Hit Is Simulating Physics, Add Impulse
 	else if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
@@ -121,50 +132,51 @@ void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, float 
 	}
 }
 
-void AShooterPlayerController::ChargeShot(float MinCharge, float MaxCharge)
+
+void AShooterPlayerController::ChargeShot(float MaxCharge)
 {
-	// if (CurrentPistolCharge < TimeToCharge)
-	// {
-	// 	CurrentPistolCharge += CurrentDeltaTime;
-	// }
-	// else
-	// {
-	// 	CurrentPistolCharge = TimeToCharge;
-	// }
+	if (CurrentWeaponCharge < MaxCharge)
+	{
+		CurrentWeaponCharge += CurrentDeltaTime;
+	}
+	else
+	{
+		CurrentWeaponCharge = MaxCharge;
+	}
 }
 
-void AShooterPlayerController::FireChargedShot(float Charge, FVector ShotOrigin)
+
+void AShooterPlayerController::FireChargedShot(float Charge, float MinCharge, FVector ShotOrigin)
 {
 	// CurrentPistolCharge = 0.0f;
 	//
-	// float Damage = Charge / PistolChargeSpeed * PistolMaxDamage;
+	// if (Charge < MinCharge) return;
 	//
-	// ShootHitscan(0, 0, Damage);
+	// ShootHitscan(0, 0, ShotOrigin);
 }
 
-void AShooterPlayerController::ShootProjectile(float Velocity, FVector ShotOrigin)
+
+void AShooterPlayerController::ShootProjectile(float SpreadX, float SpreadY, float Velocity, FVector ShotOrigin)
 {
 	const TSubclassOf<AActor> ProjectileActor = PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("")->ProjectileActor;
 	AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
 	
 	if (!SpawnedProjectile) return;
 	
-	SpawnedProjectile->SetActorLocation(PlayerCameraManager->GetCameraLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
-	SpawnedProjectile->SetActorRotation(PlayerCameraManager->GetCameraRotation());
+	SpawnedProjectile->SetActorLocation(ShotOrigin + PlayerCameraManager->GetActorForwardVector() * 150);
 	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = Velocity * PlayerCameraManager->GetCameraRotation().Vector();
 }
 
 
-
 void AShooterPlayerController::Shoot()
 {
-	FWeaponData* EquippedWeaponData = PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("");
-	EProjectileType EquippedProjectileType = EquippedWeaponData->ProjectileType;
-	float EquippedDamage = EquippedWeaponData->Damage;
-	float EquippedSpread = EquippedWeaponData->MaxSpread;
-	float ProjectileVelocity = EquippedWeaponData->ProjectileVelocity;
-	float MinCharge = EquippedWeaponData->MinChargeTime;
-	float MaxCharge = EquippedWeaponData->MaxChargeTime;
+	FWeaponData EquippedWeaponData = GetEquippedWeaponData();
+	EProjectileType EquippedProjectileType = EquippedWeaponData.ProjectileType;
+	float EquippedDamage = EquippedWeaponData.Damage;
+	float EquippedSpread = EquippedWeaponData.MaxSpread;
+	float ProjectileVelocity = EquippedWeaponData.ProjectileVelocity;
+	float MinCharge = EquippedWeaponData.MinChargeTime;
+	float MaxCharge = EquippedWeaponData.MaxChargeTime;
 
 	FVector Origin = FVector::ZeroVector;
 	if(PlayerCharacter->WeaponChildComponent->GetChildActor())
@@ -172,96 +184,71 @@ void AShooterPlayerController::Shoot()
 		Origin = PlayerCharacter->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentTransform().GetLocation();
 	}
 	
-	if (PlayerCharacter->InventoryComponent->GetAmmo(EquippedWeaponData->AmmoType) <= 0) return;
+	if (PlayerCharacter->InventoryComponent->GetAmmo(EquippedWeaponData.AmmoType) <= 0) return;
 	
 	float RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
 	float RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
 
+	if (FireRate > 0 || !SemiAutoCanFire) return;
+	
 	switch (EquippedProjectileType)
 	{
 	case EProjectileType::Hitscan:
-		if (EquippedWeaponData->WeaponType == EWeaponType::AutomaticShotgun || EquippedWeaponData->WeaponType == EWeaponType::SemiAutoShotgun)
+		if (EquippedWeaponData.IsShotgun)
 		{
-			for (int i = 0; i < EquippedWeaponData->PelletCount; i++)
+			for (int i = 0; i < EquippedWeaponData.PelletCount; i++)
 			{
 				RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
 				RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
-				ShootHitscan(RandomSpreadX, RandomSpreadY, EquippedDamage, Origin);
+				ShootHitscan(RandomSpreadX, RandomSpreadY, Origin);
 			}
 		}
-		else ShootHitscan(RandomSpreadX, RandomSpreadY, EquippedDamage, Origin);
-		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData->AmmoType, 1);
+		else
+		{
+			ShootHitscan(RandomSpreadX, RandomSpreadY, Origin);			
+		}
+		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, 1);
 		break;
 		
 	case EProjectileType::Projectile:
-		ShootProjectile(ProjectileVelocity, Origin);
-		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData->AmmoType, 1);
+		if (EquippedWeaponData.IsShotgun)
+		{
+			for (int i = 0; i < EquippedWeaponData.PelletCount; i++)
+			{
+				RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
+				RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
+				ShootProjectile(RandomSpreadX, RandomSpreadY, ProjectileVelocity, Origin);
+			}
+		}
+		else
+		{
+			ShootProjectile(RandomSpreadX, RandomSpreadY, ProjectileVelocity, Origin);			
+		}
+		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, 1);
 		break;
-		
-	case EProjectileType::ChargedHitscan:
-		ChargeShot(MinCharge, MaxCharge);
-		break;
-		
-	case EProjectileType::ChargedProjectile:
-		ChargeShot(MinCharge, MaxCharge);
-		break;
-		
+	
 	default:
 		break;
 	}
+
+	CurrentWeaponCharge = 0;
+
+	if (EquippedWeaponData.WeaponType == EWeaponType::Automatic)
+	{
+		FireRate = EquippedWeaponData.FireRate;
+	}
+	else SemiAutoCanFire = false;
 	
 }
 
-// void AShooterPlayerController::EquipWeapon(EWeaponType NewWeaponType)
-// {
-// 	// EquippedWeapon = NewWeaponType;
-//
-// 	// switch (NewWeaponType)
-// 	// {
-// 	// case EWeaponType::KNIFE:
-// 	// 	if (IsValid(KnifeActor))
-// 	// 	{
-// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(KnifeActor);
-// 	// 		WeaponMuzzleArrowComponent = nullptr;
-// 	// 	}
-// 	// 	break;
-// 	// case EWeaponType::PISTOL:
-// 	// 	if (IsValid(PistolActor))
-// 	// 	{
-// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(PistolActor);
-// 	// 	}
-// 	// 	else WeaponMuzzleArrowComponent = nullptr;
-// 	// 	break;
-// 	// case EWeaponType::RIFLE:
-// 	// 	if (IsValid(RifleActor))
-// 	// 	{
-// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(RifleActor);
-// 	// 	}
-// 	// 	else WeaponMuzzleArrowComponent = nullptr;
-// 	// 	break;
-// 	// case EWeaponType::SHOTGUN:
-// 	// 	if (IsValid(ShotgunActor))
-// 	// 	{
-// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(ShotgunActor);
-// 	// 	}
-// 	// 	else WeaponMuzzleArrowComponent = nullptr;
-// 	// 	break;
-// 	// case EWeaponType::GRENADELAUNCHER:
-// 	// 	if (IsValid(GrenadeLauncherActor))
-// 	// 	{
-// 	// 		PlayerCharacter->WeaponChildComponent->SetChildActorClass(GrenadeLauncherActor);
-// 	// 	}
-// 	// 	else WeaponMuzzleArrowComponent = nullptr;
-// 	// 	break;
-// 	// default:
-// 	// 	break;
-// 	// }
-// 	//
-// 	// if (NewWeaponType != EWeaponType::KNIFE && PlayerCharacter->WeaponChildComponent)
-// 	// {
-// 	// 	WeaponMuzzleArrowComponent = PlayerCharacter->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>();
-// 	// }
-// }
+
+void AShooterPlayerController::ResetWeapon()
+{
+	FireRate = 0;
+	CurrentWeaponCharge = 0;
+	SemiAutoCanFire = true;
+}
+
 
 void AShooterPlayerController::Tick(float DeltaTime)
 {
@@ -275,5 +262,5 @@ void AShooterPlayerController::Tick(float DeltaTime)
 		//GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Dash Cooldown = " + DashText));
 	}
 
-	// if (FireRate > 0) FireRate -= DeltaTime;
+	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeaponData().FireRate * (GetEquippedWeaponData().FireRate / 60);
 }
