@@ -36,13 +36,21 @@ void ATestDummyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 float ATestDummyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	
-	GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "DUMMY TOOK DAMAGE");
-
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (HealthComponent)
 	{
 		HealthComponent->TakeDamage(Damage);
+		
+		FString DebugMessage = "Test Dummy Took: ";
+		DebugMessage.Append(FString::SanitizeFloat(Damage));
+		DebugMessage.Append(" Damage.");
+		
+		FString HealthMessage = "Test Dummy Has: ";
+		HealthMessage.Append(FString::SanitizeFloat(HealthComponent->GetHealth()));
+		HealthMessage.Append(" Health.");
+		
+		GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Red, DebugMessage);
+		GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Green, HealthMessage);
 	}
 	return Damage;
 }

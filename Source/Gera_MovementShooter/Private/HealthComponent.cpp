@@ -47,14 +47,19 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	float HealthDrainMultiplier = CurrentHealth / MaxHealth;
 	HealthDrainMultiplier *= HealthDrainMultiplier * 5;
 
-	if (CurrentHealth > MaxHealth && CurrentHealth - DeltaTime * HealthDrainMultiplier > MaxHealth)
+	if (CurrentHealth > MaxHealth)
 	{
-		CurrentHealth -= DeltaTime * HealthDrainMultiplier;
+		if (CurrentHealth - DeltaTime * HealthDrainMultiplier > MaxHealth)
+		{
+			CurrentHealth -= DeltaTime * HealthDrainMultiplier;
+		}
+		else if (CurrentHealth - DeltaTime * HealthDrainMultiplier < MaxHealth)
+		{
+			CurrentHealth = MaxHealth;
+		}
 	}
-	else if (CurrentHealth - DeltaTime * HealthDrainMultiplier < MaxHealth)
-	{
-		CurrentHealth = MaxHealth;
-	}
+	
+
 
 	// ...
 }

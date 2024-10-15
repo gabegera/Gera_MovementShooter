@@ -38,7 +38,7 @@ struct GERA_MOVEMENTSHOOTER_API FItemData: public FTableRowBase
 	UStaticMesh* ItemMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName Name;
+	FName Name = NAME_None;
 
 	//Throwable Variables
 	

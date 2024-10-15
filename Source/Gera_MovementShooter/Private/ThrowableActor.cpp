@@ -28,24 +28,24 @@ void AThrowableActor::StartFuseTimer(float FuseTime)
 
 void AThrowableActor::Explode()
 {
-	TArray<FHitResult> HitActors;
+	TArray<FHitResult> HitArray;
 	
 	TArray<AActor*> ActorsToIgnore;
 	
-	UGameplayStatics::ApplyRadialDamageWithFalloff(this, Damage, 0, GetActorLocation(), BlastRadius, BlastRadius, 0, 0, ActorsToIgnore, this, 0);
-	UKismetSystemLibrary::SphereTraceMultiByProfile(this, GetActorLocation(), GetActorLocation(), BlastRadius, FName(FName("PhysicsActor")), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitActors, true, FLinearColor::Green, FLinearColor::Red, 1.0f);
+	UGameplayStatics::ApplyRadialDamageWithFalloff(this, Damage, 0, GetActorLocation(), BlastRadius, BlastRadius, 0, nullptr, ActorsToIgnore, this, nullptr);
+	bool isHit = UKismetSystemLibrary::SphereTraceMultiByProfile(this, GetActorLocation(), GetActorLocation(), BlastRadius, FName("PhysicsActor"), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitArray, true, FLinearColor::Green, FLinearColor::Red, 1.0f);
 
-	// for (auto ActorHit : HitActors)
-	// {
-	// 	if (IsValid(ActorHit.GetActor()->GetComponentByClass<UStaticMeshComponent>()))
-	// 	{
-	// 		UStaticMeshComponent* SMComp = ActorHit.GetActor()->GetComponentByClass<UStaticMeshComponent>();
-	// 		if (SMComp->IsSimulatingPhysics())
-	// 		{
-	// 			SMComp->AddRadialImpulse(GetActorLocation(), BlastRadius, Damage * 1000.0f, RIF_Constant, false);				
-	// 		}
-	// 	}
-	// }
+	if (isHit)
+	{
+		for (auto& Hit : HitArray)
+		{
+			if (Hit.GetComponent()->GetClass() == UStaticMeshComponent::StaticClass())
+			{
+				Hit.GetComponent()->AddRadialImpulse(GetActorLocation(), BlastRadius, Damage * 1000.0f, RIF_Constant, false);
+			}
+		}		
+	}
+
 
 	if (GrenadeExplosionParticle != nullptr)
 	{

@@ -35,16 +35,19 @@ protected:
 	float CurrentDeltaTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	float DashVelocity = 10000.0f;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
-	float DashTimer = 2.0f; //This value never changes
+	float DashVelocity = 6000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	float DashCooldown = 0.0f; //This value will change
+	float DashDuration = 2.0f;
 
-	UPROPERTY()
-	float DefaultAirFriction = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
+	FTimerHandle DashTimer;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
+	float DashCooldownLength = 2.0f; //This value never changes
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
+	float DashCooldownValue = 0.0f; //This value will change
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -82,6 +85,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void Dash(float InputX, float InputY);
+
+	UFUNCTION(BlueprintCallable)
+	void StopDash();
 
 	UFUNCTION(BlueprintCallable)
 	void Crouch();

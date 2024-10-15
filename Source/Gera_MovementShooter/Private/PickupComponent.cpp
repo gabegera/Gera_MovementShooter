@@ -18,7 +18,6 @@ UPickupComponent::UPickupComponent()
 void UPickupComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// ...
 	
 }
@@ -30,5 +29,17 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UPickupComponent::SetOutlineColor(FLinearColor Color)
+{
+	if (!IsValid(OutlineMaterial)) return;
+	
+	if (!IsValid(DynamicOutline))
+	{
+		DynamicOutline = UMaterialInstanceDynamic::Create(OutlineMaterial, this);
+	}
+	
+	DynamicOutline->SetVectorParameterValue(FName("Color"), Color);
 }
 

@@ -51,24 +51,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
 	UStaticMesh* FragGrenadeMesh = nullptr;
-
-
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* PrimaryOutlineMaterial = nullptr;
+	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* SecondaryOutlineMaterial = nullptr;
+	UMaterialInstance* OutlineMaterial = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* HeavyOutlineMaterial = nullptr;
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicOutline = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* EquipmentOutlineMaterial = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* BuffOutlineMaterial = nullptr;
-
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
 	EPickupType PickupType;
 
@@ -110,15 +101,10 @@ public:
 	UStaticMesh* GetSniperAmmoMesh() { return SniperAmmoMesh; }
 
 	UStaticMesh* GetExplosiveAmmoMesh() { return ExplosiveAmmoMesh; }
-	
 
-	UMaterialInstance* GetPrimaryOutlineMaterial() { return PrimaryOutlineMaterial; }
+	UFUNCTION(BlueprintCallable)
+	void SetOutlineColor(FLinearColor Color);
 
-	UMaterialInstance* GetSecondaryOutlineMaterial() { return SecondaryOutlineMaterial; }
-
-	UMaterialInstance* GetHeavyOutlineMaterial() { return HeavyOutlineMaterial; }
-
-	UMaterialInstance* GetEquipmentOutlineMaterial() { return EquipmentOutlineMaterial; }
-
-	UMaterialInstance* GetBuffOutlineMaterial() { return BuffOutlineMaterial; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UMaterialInstanceDynamic* GetOutlineMaterial() { return DynamicOutline; }
 };

@@ -19,6 +19,9 @@ public:
 
 	void AddHealth(float Health);
 
+	UFUNCTION()
+	float GetHealth() { return CurrentHealth; }
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

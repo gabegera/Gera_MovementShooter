@@ -55,40 +55,39 @@ void APickupObject::BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComp
 }
 
 void APickupObject::OnConstruction(const FTransform& Transform)
-{
-	
+{	
 	if (PickupComponent->GetPickupType() == EPickupType::Ammo)
 	{
 		
 		switch (PickupComponent->GetAmmoType())
 		{
 		case EAmmoType::PistolAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetSecondaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Yellow);
 			PickupMesh->SetStaticMesh(PickupComponent->GetPistolAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 			break;
 		case EAmmoType::RifleAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetPrimaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Blue);
 			PickupMesh->SetStaticMesh(PickupComponent->GetRifleAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
 			break;
 		case EAmmoType::ShotgunAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetPrimaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Orange);
 			PickupMesh->SetStaticMesh(PickupComponent->GetShotgunAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 			break;
 		case EAmmoType::SniperAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetHeavyOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Purple);
 			PickupMesh->SetStaticMesh(PickupComponent->GetSniperAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 			break;
 		case EAmmoType::ExplosiveAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetHeavyOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Red);
 			PickupMesh->SetStaticMesh(PickupComponent->GetExplosiveAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 			break;
 		case EAmmoType::EnergyAmmo:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetSecondaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Cyan);
 			PickupMesh->SetStaticMesh(PickupComponent->GetEnergyAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 			break;			
@@ -112,13 +111,13 @@ void APickupObject::OnConstruction(const FTransform& Transform)
 		switch (WeaponData->WeaponSlot)
 		{
 		case EWeaponSlot::Primary:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetPrimaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Blue);
 			break;
 		case EWeaponSlot::Secondary:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetSecondaryOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Yellow);
 			break;
 		case EWeaponSlot::Heavy:
-			PickupMesh->SetOverlayMaterial(PickupComponent->GetHeavyOutlineMaterial());
+			PickupComponent->SetOutlineColor(FColor::Red);
 			break;
 		default:
 			break;
@@ -130,16 +129,34 @@ void APickupObject::OnConstruction(const FTransform& Transform)
 		PickupMesh->SetStaticMesh(PickupComponent->GetItemPickupData().ItemMesh);
 		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 
-		PickupMesh->SetOverlayMaterial(PickupComponent->GetEquipmentOutlineMaterial());
+		PickupComponent->SetOutlineColor(FColor::Orange);
 	}
 	else if (PickupComponent->GetPickupType() == EPickupType::Buff)
 	{
-
+	
+		switch(PickupComponent->GetItemPickupData().BuffEffect)
+		{
+		case EBuffEffects::None:
+			break;
+		case EBuffEffects::Heal:
+			PickupComponent->SetOutlineColor(FColor::Green);
+			break;
+		case EBuffEffects::SpeedBoost:
+			PickupComponent->SetOutlineColor(FColor::Yellow);
+			break;
+		case EBuffEffects::DamageBoost:
+			PickupComponent->SetOutlineColor(FColor::Red);
+			break;
+		case EBuffEffects::SlowTime:
+			PickupComponent->SetOutlineColor(FColor::Purple);
+			break;
+		}
+	
 		PickupMesh->SetStaticMesh(PickupComponent->GetItemPickupData().ItemMesh);
 		PickupMesh->SetRelativeRotation(FRotator(35.0f, 0.0f, 0.0f));
-
-		PickupMesh->SetOverlayMaterial(PickupComponent->GetBuffOutlineMaterial());
 	}
+
+	if (PickupComponent->GetOutlineMaterial()) PickupMesh->SetOverlayMaterial(PickupComponent->GetOutlineMaterial());
 }
 
 // Called every frame

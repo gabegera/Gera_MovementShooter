@@ -5,6 +5,7 @@
 
 #include "ItemData.h"
 #include "ThrowableActor.h"
+#include "VectorTypes.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -63,7 +64,7 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 {
 	if (!IsValid(PlayerCharacter)) return;
 
-	if (DashCooldown <= 0.0f && !PlayerCharacter->bIsCrouched)
+	if (DashCooldownValue <= 0.0f && !PlayerCharacter->bIsCrouched)
 	{
 		FVector DashDirection;
 		if (InputX == 0 && InputY == 0)
@@ -74,11 +75,31 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 		{
 			DashDirection = PlayerCharacter->GetActorRightVector() * InputX + PlayerCharacter->GetActorForwardVector() * InputY;
 		}
-		
+		DashVelocity = PlayerCharacter->GetMovementComponent()->GetMaxSpeed() * 10;
 		PlayerCharacter->LaunchCharacter(DashDirection * DashVelocity, false, false);
-		DashCooldown = DashTimer;
+		DashCooldownValue = DashCooldownLength;
+
+		GetWorldTimerManager().SetTimer(DashTimer, this, &AShooterPlayerController::StopDash, DashDuration, false);
 	}
 	
+}
+
+void AShooterPlayerController::StopDash()
+{
+	if (!IsValid(PlayerCharacter)) return;
+
+	FVector CurrentVelocity = PlayerCharacter->GetVelocity();
+	FVector VelocityDirection;
+	float CurrentSpeed;
+
+	CurrentVelocity.ToDirectionAndLength(VelocityDirection, CurrentSpeed);
+	
+	float MaxMoveSpeed = PlayerCharacter->GetMovementComponent()->GetMaxSpeed();
+	
+	if (CurrentSpeed > MaxMoveSpeed)
+	{
+		PlayerCharacter->GetMovementComponent()->Velocity = VelocityDirection * MaxMoveSpeed;
+	}
 }
 
 
@@ -123,8 +144,7 @@ void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, FVecto
 	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
 	{
 		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT ACTOR");
-		
-		ActorHit->GetComponentByClass<UHealthComponent>()->TakeDamage(Damage);
+		ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
 	}
 	//If Hit Is Simulating Physics, Add Impulse
 	else if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
@@ -175,7 +195,6 @@ void AShooterPlayerController::Shoot()
 	float EquippedDamage = EquippedWeaponData.Damage;
 	float EquippedSpread = EquippedWeaponData.MaxSpread;
 	float ProjectileVelocity = EquippedWeaponData.ProjectileVelocity;
-	float MinCharge = EquippedWeaponData.MinChargeTime;
 	float MaxCharge = EquippedWeaponData.MaxChargeTime;
 
 	FVector Origin = FVector::ZeroVector;
@@ -312,11 +331,11 @@ void AShooterPlayerController::Tick(float DeltaTime)
 {
 	CurrentDeltaTime = DeltaTime;
 
-	if (!PlayerCharacter->GetCharacterMovement()->IsFalling() && DashCooldown > 0.0f)
+	if (!PlayerCharacter->GetCharacterMovement()->IsFalling() && DashCooldownValue > 0.0f)
 	{
-		DashCooldown -= DeltaTime;
+		DashCooldownValue -= DeltaTime;
 
-		//FString DashText = FString::SanitizeFloat(DashCooldown);
+		//FString DashText = FString::SanitizeFloat(DashCooldownValue);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Dash Cooldown = " + DashText));
 	}
 
