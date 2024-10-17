@@ -5,6 +5,8 @@
 #include <limits>
 #include "PickupObject.h"
 #include "ShooterPlayerController.h"
+#include "Camera/CameraComponent.h"
+#include "VectorUtil.h"
 
 // Sets default values
 AShooterPlayerCharacter::AShooterPlayerCharacter()
@@ -29,6 +31,12 @@ AShooterPlayerCharacter::AShooterPlayerCharacter()
 }
 
 
+FWeaponData AShooterPlayerCharacter::GetEquippedWeaponData()
+{
+	
+	return *EquippedWeapon.GetRow<FWeaponData>("");
+}
+
 // Called when the game starts or when spawned
 void AShooterPlayerCharacter::BeginPlay()
 {
@@ -44,9 +52,24 @@ void AShooterPlayerCharacter::BeginPlay()
 
 	if (IsValid(InventoryComponent))
 	{
-		EquipWeapon(InventoryComponent->PrimaryWeapon);
+		if (InventoryComponent->PrimaryWeapon.IsNull() && InventoryComponent->SecondaryWeapon.IsNull() && InventoryComponent->HeavyWeapon.IsNull())
+		{
+			EquipWeapon(InventoryComponent->GetEmptyHands());
+		}
+		else if (!InventoryComponent->PrimaryWeapon.IsNull())
+		{
+			EquipWeapon(InventoryComponent->PrimaryWeapon);			
+		}
+		else if (!InventoryComponent->SecondaryWeapon.IsNull())
+		{
+			EquipWeapon(InventoryComponent->SecondaryWeapon);		
+		}
+		else if (!InventoryComponent->HeavyWeapon.IsNull())
+		{
+			EquipWeapon(InventoryComponent->HeavyWeapon);		
+		}
+
 	}
-	
 }
 
 void AShooterPlayerCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -106,33 +129,72 @@ void AShooterPlayerCharacter::PickupItem()
 	if (ClosestPickupType == EPickupType::Weapon)
 	{
 		FWeaponData PickupWeaponData = PickupComponent->GetWeaponPickupData();
-		InventoryComponent->SwapWeapons(PickupWeaponData.WeaponSlot, PickupComponent->GetWeaponPickup());
-
+		FDataTableRowHandle NewWeapon = PickupComponent->GetWeaponPickup();
+		
 		switch (PickupWeaponData.WeaponSlot)
 		{
 		case EWeaponSlot::Primary:
-			EquipWeapon(InventoryComponent->PrimaryWeapon);
+			EquipWeapon(PickupComponent->GetWeaponPickup());
+			if (InventoryComponent->PrimaryWeapon.IsNull())
+			{
+				Cast<APickupObject>(ClosestPickup)->Destroy();
+			}
+			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->PrimaryWeapon);
 			break;
+			
 		case EWeaponSlot::Secondary:
-			EquipWeapon(InventoryComponent->SecondaryWeapon);
+			EquipWeapon(PickupComponent->GetWeaponPickup());
+			if (InventoryComponent->SecondaryWeapon.IsNull())
+			{
+				Cast<APickupObject>(ClosestPickup)->Destroy();
+			}
+			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->SecondaryWeapon);
 			break;
+			
 		case EWeaponSlot::Heavy:
-			EquipWeapon(InventoryComponent->HeavyWeapon);
+			EquipWeapon(PickupComponent->GetWeaponPickup());
+			if (InventoryComponent->HeavyWeapon.IsNull())
+			{
+				Cast<APickupObject>(ClosestPickup)->Destroy();
+			}
+			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->HeavyWeapon);
 			break;
+			
 		default:
 			break;
 		}
+		if (!NewWeapon.IsNull())
+		{
+			InventoryComponent->SwapWeapons(PickupWeaponData.WeaponSlot, NewWeapon);			
+		}
+
 	}
 	else if (ClosestPickupType == EPickupType::Buff)
 	{
 		FItemData PickupItemData = PickupComponent->GetItemPickupData();
-		InventoryComponent->SwapSupportItem(PickupComponent->GetItemPickup());
+		
+		if (InventoryComponent->SupportItemSlot.IsNull())
+		{
+			InventoryComponent->SwapSupportItem(PickupComponent->GetItemPickup());
+			ClosestPickup->Destroy();
+		}
+		else
+		{
+			FDataTableRowHandle NewItem = PickupComponent->GetItemPickup();
+			Cast<APickupObject>(ClosestPickup)->SetItemPickup(InventoryComponent->SupportItemSlot);
+			InventoryComponent->SwapSupportItem(NewItem);
+		}
+		
+		
 	}
 }
 
-void AShooterPlayerCharacter::EquipWeapon(FDataTableRowHandle Weapon)
+void AShooterPlayerCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
 {
-	EquippedWeapon = Weapon;
+	if (EquippedWeapon == NewWeapon) return;
+	if (NewWeapon.IsNull()) return;
+	
+	EquippedWeapon = NewWeapon;
 
 	if (auto EquippedWeaponData = EquippedWeapon.GetRow<FWeaponData>(""))
     	{

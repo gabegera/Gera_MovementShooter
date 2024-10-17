@@ -56,6 +56,19 @@ void APickupObject::BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComp
 
 void APickupObject::OnConstruction(const FTransform& Transform)
 {	
+	RefreshPickup();
+}
+
+// Called every frame
+void APickupObject::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	AddActorWorldRotation(FRotator(0.0f, 90.0f * DeltaTime, 0.0f));
+}
+
+void APickupObject::RefreshPickup()
+{
 	if (PickupComponent->GetPickupType() == EPickupType::Ammo)
 	{
 		
@@ -159,11 +172,17 @@ void APickupObject::OnConstruction(const FTransform& Transform)
 	if (PickupComponent->GetOutlineMaterial()) PickupMesh->SetOverlayMaterial(PickupComponent->GetOutlineMaterial());
 }
 
-// Called every frame
-void APickupObject::Tick(float DeltaTime)
+FDataTableRowHandle APickupObject::SetWeaponPickup(FDataTableRowHandle NewWeapon)
 {
-	Super::Tick(DeltaTime);
+	PickupComponent->SetWeaponType(NewWeapon);
+	RefreshPickup();
+	return NewWeapon;
+}
 
-	AddActorWorldRotation(FRotator(0.0f, 90.0f * DeltaTime, 0.0f));
+FDataTableRowHandle APickupObject::SetItemPickup(FDataTableRowHandle NewItem)
+{
+	PickupComponent->SetItemPickup(NewItem);
+	RefreshPickup();
+	return NewItem;
 }
 

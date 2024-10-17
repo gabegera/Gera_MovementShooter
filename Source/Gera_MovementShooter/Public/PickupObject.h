@@ -45,4 +45,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	void RefreshPickup();
+
+	UFUNCTION(BlueprintCallable)
+	FDataTableRowHandle SetWeaponPickup(FDataTableRowHandle NewWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	FDataTableRowHandle SetItemPickup(FDataTableRowHandle NewItem);
+
 };

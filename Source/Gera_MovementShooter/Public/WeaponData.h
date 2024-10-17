@@ -9,6 +9,7 @@ enum class EWeaponSlot : uint8
 	Primary = 0 UMETA(DisplayName = "Primary"),
 	Secondary = 1 UMETA(DisplayName = "Secondary"),
 	Heavy = 2 UMETA(DisplayName = "Heavy"),
+	AnySlot = 3 UMETA(DisplayName = "AnySlot"),
 };
 
 UENUM(BlueprintType)

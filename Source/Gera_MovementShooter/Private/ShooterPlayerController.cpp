@@ -3,10 +3,8 @@
 
 #include "ShooterPlayerController.h"
 
-#include "ItemData.h"
-#include "ThrowableActor.h"
-#include "VectorTypes.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include "ExplosiveComponent.h"
+#include "Serialization/BulkDataRegistry.h"
 
 
 void AShooterPlayerController::BeginPlay()
@@ -28,11 +26,50 @@ void AShooterPlayerController::BeginPlay()
 		// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
 		Subsystem->ClearAllMappings();
 
-		// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
+		// Add each mapping context, along with their priority values. Higher values out prioritize lower values.
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+
+	FOnTimelineFloat ProgressUpdate;
+	ProgressUpdate.BindUFunction(this, FName("UpdateDash"));
+
+	DashTimeline.AddInterpFloat(DashCurve, ProgressUpdate);
 }
 
+
+void AShooterPlayerController::UseSpeedBoost()
+{
+	UCharacterMovementComponent* MovementComponent = PlayerCharacter->GetCharacterMovement();
+	MovementComponent->MaxWalkSpeed *= SpeedBoostMultiplier;
+	MovementComponent->MaxWalkSpeedCrouched *= SpeedBoostMultiplier;
+}
+
+void AShooterPlayerController::StopSpeedBoost()
+{
+	UCharacterMovementComponent* MovementComponent = PlayerCharacter->GetCharacterMovement();
+	MovementComponent->MaxWalkSpeed /= SpeedBoostMultiplier;
+	MovementComponent->MaxWalkSpeedCrouched /= SpeedBoostMultiplier;
+}
+
+void AShooterPlayerController::UseDamageBoost()
+{
+	IsDamageBoostActive = true;
+}
+
+void AShooterPlayerController::StopDamageBoost()
+{
+	IsDamageBoostActive = false;
+}
+
+void AShooterPlayerController::UseSlowTime()
+{
+	UGameplayStatics::SetGlobalTimeDilation(this, 1 / SlowTimeDivision);
+}
+
+void AShooterPlayerController::StopSlowTime() const
+{
+	UGameplayStatics::SetGlobalTimeDilation(this, 1);
+}
 
 void AShooterPlayerController::Move(float InputX, float InputY)
 {
@@ -62,46 +99,41 @@ void AShooterPlayerController::Jump()
 
 void AShooterPlayerController::Dash(float InputX, float InputY)
 {
-	if (!IsValid(PlayerCharacter)) return;
-
-	if (DashCooldownValue <= 0.0f && !PlayerCharacter->bIsCrouched)
-	{
-		FVector DashDirection;
-		if (InputX == 0 && InputY == 0)
-		{
-			DashDirection = PlayerCharacter->GetActorForwardVector();
-		}
-		else
-		{
-			DashDirection = PlayerCharacter->GetActorRightVector() * InputX + PlayerCharacter->GetActorForwardVector() * InputY;
-		}
-		DashVelocity = PlayerCharacter->GetMovementComponent()->GetMaxSpeed() * 10;
-		PlayerCharacter->LaunchCharacter(DashDirection * DashVelocity, false, false);
-		DashCooldownValue = DashCooldownLength;
-
-		GetWorldTimerManager().SetTimer(DashTimer, this, &AShooterPlayerController::StopDash, DashDuration, false);
-	}
+	DashCooldownValue = DashCooldownLength;
 	
+	// DashDirection = InputX * PlayerCharacter->GetActorRightVector() + InputY * PlayerCharacter->GetActorForwardVector();
+	// FHitResult FloorHit = PlayerCharacter->GetCharacterMovement()->CurrentFloor.HitResult;
+	// DashDirection = GizmoMath::ProjectPointOntoPlane(DashDirection, FloorHit.Location, FloorHit.Normal);
+	// DashDirection.Normalize();
+	//
+	// DashTimeline.PlayFromStart();
+	
+	// if (!IsValid(PlayerCharacter)) return;
+	//
+	// if (DashCooldownValue <= 0.0f && !PlayerCharacter->bIsCrouched)
+	// {
+	// 	FVector DashDirection;
+	// 	if (InputX == 0 && InputY == 0)
+	// 	{
+	// 		DashDirection = PlayerCharacter->GetActorForwardVector();
+	// 	}
+	// 	else
+	// 	{
+	// 		DashDirection = PlayerCharacter->GetActorRightVector() * InputX + PlayerCharacter->GetActorForwardVector() * InputY;
+	// 	}
+	// 	DashVelocity = PlayerCharacter->GetMovementComponent()->GetMaxSpeed() * 10;
+	// 	PlayerCharacter->LaunchCharacter(DashDirection * DashVelocity, false, false);
+	//
+	// 	GetWorldTimerManager().SetTimer(DashTimer, this, &AShooterPlayerController::StopDash, DashDuration, false);
+	// }
 }
 
-void AShooterPlayerController::StopDash()
+void AShooterPlayerController::UpdateDash(float Alpha)
 {
-	if (!IsValid(PlayerCharacter)) return;
-
-	FVector CurrentVelocity = PlayerCharacter->GetVelocity();
-	FVector VelocityDirection;
-	float CurrentSpeed;
-
-	CurrentVelocity.ToDirectionAndLength(VelocityDirection, CurrentSpeed);
-	
-	float MaxMoveSpeed = PlayerCharacter->GetMovementComponent()->GetMaxSpeed();
-	
-	if (CurrentSpeed > MaxMoveSpeed)
-	{
-		PlayerCharacter->GetMovementComponent()->Velocity = VelocityDirection * MaxMoveSpeed;
-	}
+	// GEngine->AddOnScreenDebugMessage(10, 0.5f, FColor::Yellow, FString::SanitizeFloat(Alpha));
+	//
+	// PlayerCharacter->AddActorWorldOffset(DashDirection * DashVelocity * Alpha, true);
 }
-
 
 void AShooterPlayerController::Crouch()
 {
@@ -114,11 +146,21 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
+FWeaponData AShooterPlayerController::GetEquippedWeaponData()
+{
+	return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("");
+}
+
 
 void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, FVector ShotOrigin, float Damage)
 {	
 	FHitResult DebugHit;
 	FHitResult Hit;
+
+	if (IsDamageBoostActive)
+	{
+		Damage *= DamageBoostMultiplier;
+	}
 	
 	FVector TraceStart;
 	if (ShotOrigin != FVector::ZeroVector)
@@ -146,13 +188,15 @@ void AShooterPlayerController::ShootHitscan(float SpreadX, float SpreadY, FVecto
 		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT ACTOR");
 		ActorHit->TakeDamage(Damage, FDamageEvent(), this, PlayerCharacter);
 	}
-	//If Hit Is Simulating Physics, Add Impulse
-	else if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
+	// Add Impulse to Hit
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
 	{
-		if (ActorHit->GetComponentByClass<UStaticMeshComponent>()->IsSimulatingPhysics())
-		{
-			ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
-		}
+		ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
+	}
+	// If Hit is Explosive, blow up Hit
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UExplosiveComponent>()))
+	{
+		ActorHit->GetComponentByClass<UExplosiveComponent>()->Explode();
 	}
 }
 
@@ -298,16 +342,27 @@ void AShooterPlayerController::UseThrowableItem()
 	SpawnedThrowable->SetActorLocation(PlayerCameraManager->GetTransform().GetLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
 	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
 	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(ThrowableVelocity * PlayerCameraManager->GetCameraRotation().Vector(), "None", true);
-	SpawnedThrowable->SetDamage(ThrowableData->Damage);
-	SpawnedThrowable->SetBlastRadius(ThrowableData->BlastRadius);
 
-	if (ThrowableData->BlastRadius > 0) SpawnedThrowable->StartFuseTimer(ThrowableData->FuseTime);
+	UExplosiveComponent* ExplosiveComponent = SpawnedThrowable->GetComponentByClass<UExplosiveComponent>();
+	if (ExplosiveComponent)
+	{
+		if (IsDamageBoostActive)
+		{
+			ExplosiveComponent->SetDamage(ThrowableData->Damage *= DamageBoostMultiplier);
+		}
+		else ExplosiveComponent->SetDamage(ThrowableData->Damage);
+		ExplosiveComponent->SetBlastRadius(ThrowableData->BlastRadius);
+		ExplosiveComponent->SetFuseTime(ThrowableData->FuseTime);
+	}
 	
 	PlayerInventoryComp->RemoveEquipment(ThrowableData->Name, 1);
 }
 
 void AShooterPlayerController::UseBuffItem()
 {
+	if (PlayerInventoryComp->SupportItemSlot.IsNull()) return;
+	
+	float TimerLength = PlayerInventoryComp->GetEquippedSupportData().BuffDuration;
 	EBuffEffects CurrentBuffEffect = PlayerInventoryComp->GetEquippedSupportData().BuffEffect;
 	switch (CurrentBuffEffect)
 	{
@@ -317,13 +372,26 @@ void AShooterPlayerController::UseBuffItem()
 		PlayerHealthComp->AddHealth(PlayerInventoryComp->GetEquippedSupportData().HealAmount);
 		break;
 	case EBuffEffects::SpeedBoost:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseSpeedBoost();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSpeedBoost, TimerLength, false);
 		break;
 	case EBuffEffects::DamageBoost:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseDamageBoost();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopDamageBoost, TimerLength, false);
 		break;
 	case EBuffEffects::SlowTime:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseSlowTime();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSlowTime, TimerLength / SlowTimeDivision, false);
 		break;
-	default: ;
+	default:
+		break;
 	}
+
+	FDataTableRowHandle Empty;
+	PlayerInventoryComp->SupportItemSlot = Empty;
 }
 
 
@@ -338,6 +406,6 @@ void AShooterPlayerController::Tick(float DeltaTime)
 		//FString DashText = FString::SanitizeFloat(DashCooldownValue);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Dash Cooldown = " + DashText));
 	}
-
+	
 	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeaponData().FireRate * (GetEquippedWeaponData().FireRate / 60);
 }

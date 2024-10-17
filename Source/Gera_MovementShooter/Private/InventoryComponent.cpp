@@ -3,6 +3,8 @@
 
 #include "InventoryComponent.h"
 
+#include "ShooterPlayerCharacter.h"
+
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {

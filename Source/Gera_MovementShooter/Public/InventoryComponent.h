@@ -22,8 +22,11 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 	UDataTable* WeaponsDataTable = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	FDataTableRowHandle EmptyHands;
 
 	UPROPERTY(BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
@@ -44,6 +47,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle HeavyWeapon;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FDataTableRowHandle GetEmptyHands() { return EmptyHands; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle EquipmentSlot;

@@ -7,8 +7,9 @@
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Camera/CameraComponent.h"
+
 #include "ShooterPlayerCharacter.generated.h"
+
 
 
 UCLASS()
@@ -25,12 +26,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UInventoryComponent* InventoryComponent = nullptr;
-
+	
 	UPROPERTY(BlueprintReadOnly)
 	FDataTableRowHandle EquippedWeapon;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetEquippedWeaponData() { return *EquippedWeapon.GetRow<FWeaponData>(""); }
+	FWeaponData GetEquippedWeaponData();
 	
 
 protected:
@@ -48,15 +49,15 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UHealthComponent* HealthComponent = nullptr;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* CameraComponent = nullptr;
+	class UCameraComponent* CameraComponent = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	USkeletalMeshComponent* WeaponChildMesh = nullptr;
 
 	UFUNCTION(BlueprintCallable)
-	void EquipWeapon(FDataTableRowHandle Weapon);
+	void EquipWeapon(FDataTableRowHandle NewWeapon);
 
 	UPROPERTY()
 	TSet<AActor*> PickupSet;

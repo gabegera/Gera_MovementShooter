@@ -107,4 +107,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UMaterialInstanceDynamic* GetOutlineMaterial() { return DynamicOutline; }
+
+	void SetWeaponType(FDataTableRowHandle NewWeapon) { WeaponPickup = NewWeapon; }
+
+	void SetItemPickup(FDataTableRowHandle NewItem) { ItemPickup = NewItem; }
 };

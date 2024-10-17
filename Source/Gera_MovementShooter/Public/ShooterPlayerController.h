@@ -5,11 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "ShooterPlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "PickupObject.h"
 #include "WeaponData.h"
+#include "ItemData.h"
 #include "HealthComponent.h"
+#include "Components/TimelineComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Engine/DamageEvents.h"
+#include "ThrowableActor.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ShooterPlayerController.generated.h"
@@ -34,14 +39,23 @@ protected:
 
 	float CurrentDeltaTime;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	float DashVelocity = 6000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	float MouseSensitivity = 1.0f;
+
+	// ------ DASHING ------
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	float DashDuration = 2.0f;
+	float DashVelocity = 20.0f;
+
+	FVector DashDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
-	FTimerHandle DashTimer;
+	UCurveFloat* DashCurve = nullptr;
+	
+	FTimeline DashTimeline;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
 	float DashCooldownLength = 2.0f; //This value never changes
@@ -49,13 +63,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashCooldownValue = 0.0f; //This value will change
 
+	UFUNCTION(BlueprintCallable)
+	void Dash(float InputX, float InputY);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	class UInputMappingContext* DefaultMappingContext;
+	UFUNCTION()
+	void UpdateDash(float Alpha);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	float MouseSensitivity = 1.0f;
-
+	
+	
+	// ------ SHOOTING AND WEAPONS ------
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UArrowComponent* MuzzleArrowComponent;
 
@@ -67,10 +84,43 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Shooting/Weapons")
 	bool SemiAutoCanFire;
-
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	float ThrowableVelocity = 400.0f;
+
+
+	// ------ BUFFS ------
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
+	float SpeedBoostMultiplier = 3.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Buffs")
+	bool IsDamageBoostActive = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
+	float DamageBoostMultiplier = 3.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
+	float SlowTimeDivision = 3.0f;
+
+	FTimerHandle BuffTimer;
+
+	UFUNCTION(BlueprintCallable)
+	void UseSpeedBoost();
+
+	UFUNCTION()
+	void StopSpeedBoost();
+
+	UFUNCTION(BlueprintCallable)
+	void UseDamageBoost();
+
+	UFUNCTION()
+	void StopDamageBoost();
+
+	UFUNCTION(BlueprintCallable)
+	void UseSlowTime();
+
+	UFUNCTION()
+	void StopSlowTime() const;
 	
 
 
@@ -82,13 +132,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void Jump();
-
-	UFUNCTION(BlueprintCallable)
-	void Dash(float InputX, float InputY);
-
-	UFUNCTION(BlueprintCallable)
-	void StopDash();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void Crouch();
 
@@ -96,7 +140,7 @@ protected:
 	void StopCrouch();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetEquippedWeaponData() { return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>(""); }
+	FWeaponData GetEquippedWeaponData();
 
 	UFUNCTION(BlueprintCallable)
 	void ShootHitscan(float SpreadX, float SpreadY, FVector ShotOrigin, float Damage);
