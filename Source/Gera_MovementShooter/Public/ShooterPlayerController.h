@@ -66,9 +66,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Dash(float InputX, float InputY);
 
-	UFUNCTION()
-	void UpdateDash(float Alpha);
-
 	
 	
 	// ------ SHOOTING AND WEAPONS ------
@@ -152,7 +149,7 @@ protected:
 	void ShootProjectile(float SpreadX, float SpreadY, float Velocity, FVector ShotOrigin);
 
 	UFUNCTION(BlueprintCallable)
-	void Shoot();
+	void Shoot(bool InfiniteAmmo = false);
 
 	UFUNCTION(BlueprintCallable)
 	void ResetWeapon();

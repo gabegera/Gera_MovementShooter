@@ -128,12 +128,6 @@ void AShooterPlayerController::Dash(float InputX, float InputY)
 	// }
 }
 
-void AShooterPlayerController::UpdateDash(float Alpha)
-{
-	// GEngine->AddOnScreenDebugMessage(10, 0.5f, FColor::Yellow, FString::SanitizeFloat(Alpha));
-	//
-	// PlayerCharacter->AddActorWorldOffset(DashDirection * DashVelocity * Alpha, true);
-}
 
 void AShooterPlayerController::Crouch()
 {
@@ -232,7 +226,7 @@ void AShooterPlayerController::ShootProjectile(float SpreadX, float SpreadY, flo
 }
 
 
-void AShooterPlayerController::Shoot()
+void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 {
 	FWeaponData EquippedWeaponData = GetEquippedWeaponData();
 	EProjectileType EquippedProjectileType = EquippedWeaponData.ProjectileType;
@@ -252,7 +246,10 @@ void AShooterPlayerController::Shoot()
 	float RandomSpreadX = FMath::RandRange(-EquippedSpread, EquippedSpread);
 	float RandomSpreadY = FMath::RandRange(-EquippedSpread, EquippedSpread);
 
-	if (FireRate > 0 || (!SemiAutoCanFire && !EquippedWeaponData.CanCharge)) return;
+	if (InfiniteAmmo == false)
+	{
+		if (FireRate > 0 || (!SemiAutoCanFire && !EquippedWeaponData.CanCharge)) return;		
+	}
 	
 	switch (EquippedProjectileType)
 	{
@@ -275,14 +272,19 @@ void AShooterPlayerController::Shoot()
 			ShootHitscan(RandomSpreadX, RandomSpreadY, Origin, EquippedDamage);			
 		}
 
-		if (EquippedWeaponData.CanCharge)
+		if (InfiniteAmmo == false)
 		{
-			PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, FMath::RoundToInt(EquippedWeaponData.AmmoCost * CurrentWeaponCharge / MaxCharge));			
+			if (EquippedWeaponData.CanCharge)
+			{
+				PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, FMath::RoundToInt(EquippedWeaponData.AmmoCost * CurrentWeaponCharge / MaxCharge));			
+			}
+			else
+			{
+				PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, EquippedWeaponData.AmmoCost);			
+			}	
 		}
-		else
-		{
-			PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, EquippedWeaponData.AmmoCost);			
-		}
+		
+
 
 		break;
 		
@@ -300,7 +302,10 @@ void AShooterPlayerController::Shoot()
 		{
 			ShootProjectile(RandomSpreadX, RandomSpreadY, ProjectileVelocity, Origin);			
 		}
-		PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, 1);
+		if (InfiniteAmmo == false)
+		{
+			PlayerCharacter->InventoryComponent->RemoveAmmo(EquippedWeaponData.AmmoType, 1);
+		}
 		break;
 	
 	default:

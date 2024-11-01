@@ -121,51 +121,19 @@ void APickupObject::RefreshPickup()
 		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 		//InteractSphereTrigger->SetSphereRadius(PickupMesh->Bounds.GetSphere().W * 2);
 
-		switch (WeaponData->WeaponSlot)
-		{
-		case EWeaponSlot::Primary:
-			PickupComponent->SetOutlineColor(FColor::Blue);
-			break;
-		case EWeaponSlot::Secondary:
-			PickupComponent->SetOutlineColor(FColor::Yellow);
-			break;
-		case EWeaponSlot::Heavy:
-			PickupComponent->SetOutlineColor(FColor::Red);
-			break;
-		default:
-			break;
-		}
+		PickupComponent->SetOutlineColor(PickupComponent->GetWeaponPickupData().OutlineColor);
 	}
 	else if (PickupComponent->GetPickupType() == EPickupType::Equipment)
 	{
 
 		PickupMesh->SetStaticMesh(PickupComponent->GetItemPickupData().ItemMesh);
 		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-
-		PickupComponent->SetOutlineColor(FColor::Orange);
+		PickupComponent->SetOutlineColor(PickupComponent->GetItemPickupData().OutlineColor);
 	}
 	else if (PickupComponent->GetPickupType() == EPickupType::Buff)
 	{
-	
-		switch(PickupComponent->GetItemPickupData().BuffEffect)
-		{
-		case EBuffEffects::None:
-			break;
-		case EBuffEffects::Heal:
-			PickupComponent->SetOutlineColor(FColor::Green);
-			break;
-		case EBuffEffects::SpeedBoost:
-			PickupComponent->SetOutlineColor(FColor::Yellow);
-			break;
-		case EBuffEffects::DamageBoost:
-			PickupComponent->SetOutlineColor(FColor::Red);
-			break;
-		case EBuffEffects::SlowTime:
-			PickupComponent->SetOutlineColor(FColor::Purple);
-			break;
-		}
-	
 		PickupMesh->SetStaticMesh(PickupComponent->GetItemPickupData().ItemMesh);
+		PickupComponent->SetOutlineColor(PickupComponent->GetItemPickupData().OutlineColor);
 		PickupMesh->SetRelativeRotation(FRotator(35.0f, 0.0f, 0.0f));
 	}
 

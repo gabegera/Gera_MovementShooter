@@ -60,6 +60,9 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMesh* StaticMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FColor OutlineColor = FColor::White;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
 	EProjectileType ProjectileType = EProjectileType::None;

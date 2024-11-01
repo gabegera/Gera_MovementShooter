@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "ItemData.h"
 #include "WeaponData.h"
-#include "WeaponData.h"
 #include "Components/ActorComponent.h"
 #include "PickupComponent.generated.h"
 
@@ -30,6 +29,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	TObjectPtr<AActor> PlayerCharacter;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
 	UStaticMesh* PistolAmmoMesh = nullptr;

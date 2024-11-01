@@ -38,6 +38,9 @@ struct GERA_MOVEMENTSHOOTER_API FItemData: public FTableRowBase
 	UStaticMesh* ItemMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FColor OutlineColor = FColor::White;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName Name = NAME_None;
 
 	//Throwable Variables
