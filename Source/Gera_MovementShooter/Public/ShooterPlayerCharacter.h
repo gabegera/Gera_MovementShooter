@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ShooterCharacter.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Components/CapsuleComponent.h"
 
 #include "ShooterPlayerCharacter.generated.h"
@@ -18,17 +19,31 @@ class GERA_MOVEMENTSHOOTER_API AShooterPlayerCharacter : public AShooterCharacte
 public:
 	// Sets default values for this character's properties
 	AShooterPlayerCharacter();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UCameraComponent* GetFirstPersonCameraComponent() const { return CameraComponent; }
 	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	AShooterPlayerController* GetPlayerController();
+
+	// UFUNCTION(BlueprintCallable)
+	// void UpdateLook(FVector2D Input);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	AShooterPlayerController* PlayerController = nullptr;
 	
 	/*UFUNCTION(BlueprintCallable)
-	void Look(float InputX, float InputY);*/
+	void UpdateLook(float InputX, float InputY);*/
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* CameraComponent = nullptr;
+	UCameraComponent* CameraComponent = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAIPerceptionStimuliSourceComponent* PerceptionStimuliSourceComponent = nullptr;
 
 
 public:	

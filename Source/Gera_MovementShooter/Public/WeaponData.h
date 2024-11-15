@@ -45,87 +45,111 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	EWeaponSlot WeaponSlot = EWeaponSlot::Primary;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	FName Name;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	EWeaponType WeaponType = EWeaponType::Melee;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	TSubclassOf<AActor> WeaponActor;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Pickup Settings")
 	UStaticMesh* StaticMesh;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Pickup Settings")
 	FColor OutlineColor = FColor::White;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Ammo Settings")
 	EProjectileType ProjectileType = EProjectileType::None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"))
+	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"), Category="Ammo Settings")
 	TSubclassOf<AActor> ProjectileActor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Ammo Settings")
 	EAmmoType AmmoType = EAmmoType::None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Shooting Settings")
 	int AmmoCost = 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Shooting Settings")
 	float Damage;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In RPM (Rounds Per Minute)",
-	EditCondition = "WeaponType == EWeaponType::Automatic || WeaponType == EWeaponType::AutomaticShotgun"))
+	EditCondition = "WeaponType == EWeaponType::Automatic || WeaponType == EWeaponType::AutomaticShotgun"), Category="Shooting Settings")
 	float FireRate;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
-	float MaxSpread;
+	meta = (ClampMin = "1.0", EditCondition = "WeaponType != EWeaponType::Melee"), Category="Aiming Settings")
+	float ZoomMultiplier = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Aiming Settings")
+	bool AimingSpreadOverride = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee && AimingSpreadOverride"), Category="Aiming Settings")
+	float AimingSpreadInDegrees;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Aiming Settings")
+	float SpreadInDegrees;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee", ToolTip = "Multiplies the Weapon Spread by this value Each Shot"), Category="Aiming Settings")
+	float SpreadMultiplier;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	FVector2D HipfireRecoil;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	FVector2D AimingRecoil;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "Set to 0 for infinite ammo.",
-	EditCondition = "WeaponType != EWeaponType::Melee"))
+	EditCondition = "WeaponType != EWeaponType::Melee"), Category="Ammo Settings")
 	int MagazineCapacity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != Melee"))
+	meta = (EditCondition = "WeaponType != Melee"), Category="Shotgun Settings")
 	bool IsShotgun;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "isShotgun"))
+	meta = (EditCondition = "isShotgun"), Category="Shotgun Settings")
 	int PelletCount;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"))
+	meta = (EditCondition = "ProjectileType == EProjectileType::Projectile || ProjectileType == EProjectileType::ChargedProjectile"), Category="Shooting Settings")
 	float ProjectileVelocity;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Charging")
 	bool CanCharge = false;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In Seconds",
-	EditCondition = "CanCharge"))
+	EditCondition = "CanCharge"), Category="Weapon Charging")
 	float MinChargeTime;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "In Seconds",
-	EditCondition = "CanCharge"))
+	EditCondition = "CanCharge"), Category="Weapon Charging")
 	float MaxChargeTime;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee"))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Explosive")
 	bool IsExplosive = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
-	meta = (EditCondition = "WeaponType != EWeaponType::Melee && IsExplosive"))
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee && IsExplosive"), Category="Explosive")
 	float ExplosionRadius = 0.0f;
 };

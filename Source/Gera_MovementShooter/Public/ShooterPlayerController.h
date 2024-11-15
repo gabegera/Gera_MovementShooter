@@ -24,6 +24,7 @@ class GERA_MOVEMENTSHOOTER_API AShooterPlayerController : public APlayerControll
 {
 	GENERATED_BODY()
 
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -64,7 +65,7 @@ protected:
 	float DashCooldownValue = 0.0f; //This value will change
 
 	UFUNCTION(BlueprintCallable)
-	void Dash(float InputX, float InputY);
+	void Dash();
 
 	
 	
@@ -85,6 +86,34 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	float ThrowableVelocity = 400.0f;
 
+	UPROPERTY()
+	float DefaultFOV;
+
+	UPROPERTY(EditAnywhere, Category = "Shooting/Weapons")
+	FTimeline AimingTimeline;
+
+	
+	// ------ RECOIL ------
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D RecoilTarget = FVector2D::ZeroVector;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D RecoilProgress = FVector2D::ZeroVector;
+
+	UFUNCTION(BlueprintCallable)
+	void AddRecoil(FVector2D RecoilAmount);
+
+	FTimerHandle RecoilTimer;
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector2D MouseRecoilReturnLimit = FVector2D(5, 5);
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector2D MouseRecoilTracker = FVector2D::ZeroVector;
+
+	UFUNCTION()
+	void UpdateRecoil();
 
 	// ------ BUFFS ------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
@@ -99,6 +128,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
 	float SlowTimeDivision = 3.0f;
 
+	UPROPERTY()
 	FTimerHandle BuffTimer;
 
 	UFUNCTION(BlueprintCallable)
@@ -120,12 +150,17 @@ protected:
 	void StopSlowTime() const;
 	
 
-
 	UFUNCTION(BlueprintCallable)
 	void Move(float InputX, float InputY);
 
+	UPROPERTY()
+	FVector2D LookInput;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector2D GetLookInput() { return LookInput; }
+
 	UFUNCTION(BlueprintCallable)
-	void Look(float InputX, float InputY);
+	void AddLookInput(const FVector2D Input);
 
 	UFUNCTION(BlueprintCallable)
 	void Jump();
@@ -140,16 +175,28 @@ protected:
 	FWeaponData GetEquippedWeaponData();
 
 	UFUNCTION(BlueprintCallable)
-	void ShootHitscan(float SpreadX, float SpreadY, FVector ShotOrigin, float Damage);
+	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotDirection, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void ChargeShot(float MaxCharge);
 
 	UFUNCTION(BlueprintCallable)
-	void ShootProjectile(float SpreadX, float SpreadY, float Velocity, FVector ShotOrigin);
+	void ShootProjectile(float WeaponSpreadInDegrees, float Velocity, FVector ShotOrigin, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot(bool InfiniteAmmo = false);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetShotSpreadInDegrees();
+
+	UFUNCTION(BlueprintCallable)
+	void Aim(float ZoomMultiplier);
+
+	UFUNCTION(BlueprintCallable)
+	void StopAiming();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsAiming();
 
 	UFUNCTION(BlueprintCallable)
 	void ResetWeapon();
@@ -161,6 +208,11 @@ protected:
 	void UseBuffItem();
 
 public:
+
+	AShooterPlayerCharacter* GetPlayerCharacter() const { return PlayerCharacter; }
+
+
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 };

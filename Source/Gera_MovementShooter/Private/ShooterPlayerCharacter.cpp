@@ -2,7 +2,7 @@
 
 
 #include "ShooterPlayerCharacter.h"
-#include <limits>
+
 #include "PickupObject.h"
 #include "ShooterPlayerController.h"
 #include "Camera/CameraComponent.h"
@@ -15,6 +15,8 @@ AShooterPlayerCharacter::AShooterPlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	PerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("AI Perception Stimulus"));
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
@@ -30,8 +32,23 @@ AShooterPlayerCharacter::AShooterPlayerCharacter()
 
 }
 
+AShooterPlayerController* AShooterPlayerCharacter::GetPlayerController()
+{
+	if (PlayerController == nullptr)
+	{
+		PlayerController = Cast<AShooterPlayerController>(GetController());
+	}
 
+	return PlayerController;
+}
 
+// void AShooterPlayerCharacter::UpdateLook(FVector2D Input)
+// {
+// 	AddControllerYawInput(Input.X);
+// 	AddControllerPitchInput(Input.Y);
+//
+// 	GEngine->AddOnScreenDebugMessage(4, 0.2f, FColor::Red, "Look Updated: " + Input.ToString());
+// }
 
 // Called when the game starts or when spawned
 void AShooterPlayerCharacter::BeginPlay()
@@ -64,18 +81,6 @@ void AShooterPlayerCharacter::BeginPlay()
 
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Called every frame
 void AShooterPlayerCharacter::Tick(float DeltaTime)

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyCharacter.h"
+#include "BaseEnemyCharacter.h"
 #include "GameFramework/Actor.h"
 #include "EnemySpawner.generated.h"
 
@@ -21,7 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere)
-	TSoftClassPtr<AEnemyCharacter> EnemyToSpawn;
+	TSoftClassPtr<ABaseEnemyCharacter> EnemyToSpawn;
 
 	UPROPERTY(EditAnywhere)
 	FDataTableRowHandle EnemyWeapon;
@@ -32,7 +32,7 @@ protected:
 public:
 
 	// UFUNCTION(BlueprintCallable)
-	// AEnemyCharacter* SpawnEnemy();
+	// ABaseEnemyCharacter* SpawnEnemy();
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

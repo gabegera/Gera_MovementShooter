@@ -28,10 +28,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FDataTableRowHandle EmptyHands;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<FName, int> EquipmentMap;
 
 

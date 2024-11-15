@@ -3,7 +3,7 @@
 
 #include "EnemySpawner.h"
 
-#include "EnemyCharacter.h"
+#include "BaseEnemyCharacter.h"
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
 
@@ -26,9 +26,9 @@ void AEnemySpawner::BeginPlay()
 	
 }
 
-// AEnemyCharacter* AEnemySpawner::SpawnEnemy()
+// ABaseEnemyCharacter* AEnemySpawner::SpawnEnemy()
 // {
-// 	AEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<AEnemyCharacter>(EnemyToSpawn.LoadSynchronous(), GetActorLocation(), GetActorRotation());
+// 	ABaseEnemyCharacter* SpawnedEnemy = GetWorld()->SpawnActor<ABaseEnemyCharacter>(EnemyToSpawn.LoadSynchronous(), GetActorLocation(), GetActorRotation());
 // 	
 // 	SpawnedEnemy->GetInventoryComponent()->SwapWeapons(EWeaponSlot::Primary, EnemyWeapon);
 // 	
