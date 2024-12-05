@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "BaseEnemyCharacter.h"
+#include "Components/ArrowComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "BaseEnemyAIController.generated.h"
 
@@ -43,11 +44,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ABaseEnemyCharacter* GetEnemyCharacter();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EEnemyType GetEnemyType() { return GetEnemyCharacter()->GetEnemyType(); }
-
 	UFUNCTION(BlueprintCallable)
-	void Shoot(FVector Target, float Velocity);
+	void Shoot(FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetShotSpreadInDegrees();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool GetCanShoot() { return CanShoot; }
@@ -57,6 +58,47 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void CanShootDisable() { CanShoot = false;}
+
+	// ------ WEAPON DATA GETTERS ------
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FWeaponData GetEquippedWeaponData();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EAmmoType GetAmmoType() { return GetEquippedWeaponData().AmmoType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetProjectileVelocity() { return GetEquippedWeaponData().ProjectileVelocity; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetMuzzleLocation() { return GetEnemyCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector2D GetHipfireRecoil() { return GetEquippedWeaponData().HipfireRecoil; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector2D GetAimingRecoil() { return GetEquippedWeaponData().AimingRecoil; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetFireRate() { return GetEquippedWeaponData().FireRate; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetDamage() { return GetEquippedWeaponData().Damage; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsWeaponShotgun() { return GetEquippedWeaponData().IsShotgun; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetPelletCount() { return GetEquippedWeaponData().PelletCount; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetMaxChargeTime() { return GetEquippedWeaponData().MaxChargeTime; }
 
 	virtual void Tick(float DeltaTime) override;
 };

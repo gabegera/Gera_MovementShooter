@@ -22,20 +22,10 @@ ABaseEnemyCharacter::ABaseEnemyCharacter()
 	
 }
 
-void ABaseEnemyCharacter::PickupWeapon(APickupObject* Pickup)
-{
-	InventoryComponent->SwapWeapons(EWeaponSlot::Primary, Pickup->GetComponentByClass<UPickupComponent>()->GetWeaponPickup());
-
-	WeaponChildComponent->SetChildActorClass(Pickup->GetComponentByClass<UPickupComponent>()->GetWeaponPickupData().WeaponActor->GetClass());
-}
-
 // Called when the game starts or when spawned
 void ABaseEnemyCharacter::BeginPlay()
 {	
 	Super::BeginPlay();
-
-	
-	
 }
 
 // Called every frame
@@ -69,12 +59,5 @@ float ABaseEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		}
 	}
 	return Damage;
-}
-
-EEnemyType ABaseEnemyCharacter::SetEnemyType(EEnemyType NewEnemyType)
-{
-	EnemyType = NewEnemyType;
-	
-	return EnemyType;
 }
 

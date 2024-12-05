@@ -3,3 +3,9 @@
 
 #include "RangedEnemyAIController.h"
 
+void ARangedEnemyAIController::ShootAtTarget(float Accuracy, AActor* Target)
+{
+	if (!Target) return;
+
+	
+}

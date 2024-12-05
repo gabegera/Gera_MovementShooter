@@ -32,6 +32,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void OnConstruction(const FTransform& Transform) override;
 	
 	UFUNCTION()
     void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
@@ -52,9 +54,6 @@ protected:
     TSet<AActor*> PickupSet;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -66,5 +65,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PickupItem();
+
+	UFUNCTION(BlueprintCallable)
+	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotTarget, float Damage);
+	
+	UFUNCTION(BlueprintCallable)
+	void ShootProjectile(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector Velocity, float Damage);
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 };

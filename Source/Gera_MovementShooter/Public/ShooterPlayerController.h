@@ -16,6 +16,7 @@
 #include "Engine/DamageEvents.h"
 #include "ThrowableActor.h"
 #include "EnhancedInputSubsystems.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ShooterPlayerController.generated.h"
 
@@ -106,11 +107,11 @@ protected:
 
 	FTimerHandle RecoilTimer;
 
-	UPROPERTY(BlueprintReadWrite)
-	FVector2D MouseRecoilReturnLimit = FVector2D(5, 5);
-
-	UPROPERTY(BlueprintReadWrite)
-	FVector2D MouseRecoilTracker = FVector2D::ZeroVector;
+	// UPROPERTY(BlueprintReadWrite)
+	// FVector2D MouseRecoilReturnLimit = FVector2D(5, 5);
+	//
+	// UPROPERTY(BlueprintReadWrite)
+	// FVector2D MouseRecoilTracker = FVector2D::ZeroVector;
 
 	UFUNCTION()
 	void UpdateRecoil();
@@ -175,13 +176,7 @@ protected:
 	FWeaponData GetEquippedWeaponData();
 
 	UFUNCTION(BlueprintCallable)
-	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotDirection, float Damage);
-
-	UFUNCTION(BlueprintCallable)
 	void ChargeShot(float MaxCharge);
-
-	UFUNCTION(BlueprintCallable)
-	void ShootProjectile(float WeaponSpreadInDegrees, float Velocity, FVector ShotOrigin, float Damage);
 
 	UFUNCTION(BlueprintCallable)
 	void Shoot(bool InfiniteAmmo = false);
@@ -211,7 +206,59 @@ public:
 
 	AShooterPlayerCharacter* GetPlayerCharacter() const { return PlayerCharacter; }
 
+	UInventoryComponent* GetInventory() const { return GetPlayerCharacter()->InventoryComponent;}
 
+	// ------ WEAPON DATA GETTERS ------
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EAmmoType GetAmmoType() { return GetEquippedWeaponData().AmmoType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetProjectileVelocity() { return GetEquippedWeaponData().ProjectileVelocity; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetMuzzleLocation() { return GetPlayerCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector2D GetHipfireRecoil() { return GetEquippedWeaponData().HipfireRecoil; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector2D GetAimingRecoil() { return GetEquippedWeaponData().AimingRecoil; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetFireRate() { return GetEquippedWeaponData().FireRate; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetDamage() { return GetEquippedWeaponData().Damage; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsWeaponShotgun() { return GetEquippedWeaponData().IsShotgun; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetPelletCount() { return GetEquippedWeaponData().PelletCount; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetMaxChargeTime() { return GetEquippedWeaponData().MaxChargeTime; }
+
+	// ------ CAMERA GETTERS ------
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UCameraComponent* GetFPCamera() { return GetPlayerCharacter()->GetFirstPersonCameraComponent(); }
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetFPCameraLocation() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetComponentLocation(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetFPCameraForward() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetForwardVector(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetFPCameraUp() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetUpVector(); }
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -2,9 +2,14 @@
 
 
 #include "ShooterCharacter.h"
+
+#include "ExplosiveComponent.h"
 #include "PickupComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PickupObject.h"
+#include "Engine/DamageEvents.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -21,11 +26,35 @@ void AShooterCharacter::BeginPlay()
 
 	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &AShooterCharacter::BeginOverlap);
 	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &AShooterCharacter::EndOverlap);
+
+	//if (!InventoryComponent->PrimaryWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
+}
+
+void AShooterCharacter::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	EquipWeapon(InventoryComponent->PrimaryWeapon);
+
+	// if (InventoryComponent->PrimaryWeapon.IsNull()) {
+	// 	EquipWeapon(InventoryComponent->PrimaryWeapon);
+	// }
+	// else if (InventoryComponent->SecondaryWeapon.IsNull()) {
+	// 	EquipWeapon(InventoryComponent->SecondaryWeapon);
+	// }
+	// else if (InventoryComponent->HeavyWeapon.IsNull()){
+	// 	EquipWeapon(InventoryComponent->HeavyWeapon);
+	// }
+	// else
+	// {
+	// 	WeaponChildComponent->DestroyChildActor();
+	// }
 	
 }
 
 FWeaponData AShooterCharacter::GetEquippedWeaponData()
 {
+	if (!EquippedWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
 	
 	return *EquippedWeapon.GetRow<FWeaponData>("");
 }
@@ -158,6 +187,55 @@ void AShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
     	{
     		WeaponChildComponent->SetChildActorClass(EquippedWeaponData->WeaponActor);
     	}
+}
+
+void AShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector ShotOrigin, FVector ShotTarget, float Damage)
+{
+	FHitResult Hit;
+	FCollisionQueryParams IgnorePlayer;
+	IgnorePlayer.AddIgnoredActor(GetUniqueID());
+	const FVector ShotDirection = UKismetMathLibrary::GetDirectionUnitVector(ShotOrigin, ShotTarget);
+	const float ShotLength = (ShotTarget - ShotOrigin).Length();
+	ShotTarget = ShotOrigin + UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ShotDirection, WeaponSpreadInDegrees / 2) * ShotLength + GetActorForwardVector() * 20.0f;
+	
+	DrawDebugLine(GetWorld(), ShotOrigin, ShotTarget, FColor::Red, false, 0.2f, 0, 0.5f);
+	GetWorld()->LineTraceSingleByChannel(Hit, ShotOrigin, ShotTarget, ECC_PhysicsBody, IgnorePlayer);
+	
+	AActor* ActorHit = Hit.GetActor();
+
+	// If Hit has Health, Deal Damage
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UHealthComponent>()))
+	{
+		GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "HIT ACTOR");
+		ActorHit->TakeDamage(Damage, FDamageEvent(), GetController(), this);
+	}
+	// Add Impulse to Hit
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UStaticMeshComponent>()))
+	{
+		ActorHit->GetComponentByClass<UStaticMeshComponent>()->AddRadialImpulse(Hit.ImpactPoint, 128, 50 * Damage, ERadialImpulseFalloff(), true);
+	}
+	// If Hit is Explosive, blow up Hit
+	if (ActorHit && IsValid(ActorHit->GetComponentByClass<UExplosiveComponent>()))
+	{
+		ActorHit->GetComponentByClass<UExplosiveComponent>()->Explode();
+	}
+}
+
+void AShooterCharacter::ShootProjectile(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector Velocity, float Damage)
+{
+	SetActorEnableCollision(false);
+	const TSubclassOf<AActor> ProjectileActor = EquippedWeapon.GetRow<FWeaponData>("")->ProjectileActor;
+	AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
+
+	if (!SpawnedProjectile)
+	{
+		SetActorEnableCollision(true);
+		return;
+	}
+	
+	SpawnedProjectile->SetActorLocation(ShotOrigin);
+	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = Velocity;
+	SetActorEnableCollision(true);
 }
 
 // Called every frame

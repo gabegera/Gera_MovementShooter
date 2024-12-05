@@ -6,12 +6,13 @@
 #include "BaseEnemyAIController.h"
 #include "RangedEnemyAIController.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class GERA_MOVEMENTSHOOTER_API ARangedEnemyAIController : public ABaseEnemyAIController
 {
 	GENERATED_BODY()
+
+public:
+	void ShootAtTarget(float Accuracy, AActor* Target);
 	
 };

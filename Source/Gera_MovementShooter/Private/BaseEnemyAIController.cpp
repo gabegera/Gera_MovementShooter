@@ -5,6 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AISenseConfig_Sight.h"
 
 ABaseEnemyAIController::ABaseEnemyAIController()
@@ -90,26 +91,59 @@ ABaseEnemyCharacter* ABaseEnemyAIController::GetEnemyCharacter()
 
 }
 
-void ABaseEnemyAIController::Shoot(FVector Target, float Velocity)
+void ABaseEnemyAIController::Shoot(FVector TargetLocation)
 {
-	if (GetCanShoot() == false) return;
+	FVector ShotStart = GetEnemyCharacter()->GetActorLocation();
+	FVector ShotTarget = TargetLocation;
 	
-	const TSubclassOf<AActor> ProjectileActor = GetEnemyCharacter()->EquippedWeapon.GetRow<FWeaponData>("")->ProjectileActor;
-	AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
-	
-	float FireRate = GetEnemyCharacter()->GetEquippedWeaponData().FireRate * (GetEnemyCharacter()->GetEquippedWeaponData().FireRate / 60);
-	if (FireRate == 0) FireRate = 0.5f;
+	if (GetEnemyCharacter()->WeaponChildComponent->GetChildActor())
+	{
+		ShotStart = GetMuzzleLocation();
+	}
 
-	GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &ABaseEnemyAIController::CanShootEnable, FireRate, false);
+	FVector ShotDirection = UKismetMathLibrary::GetDirectionUnitVector(ShotStart, ShotTarget);
+	for (int i = 0; i <= GetPelletCount(); i++)
+	{
+		if (i == 0) i++;
+		
+		if (GetProjectileType() == EProjectileType::Hitscan) {
+			GetEnemyCharacter()->ShootHitscan(GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetDamage());
+		}
+		else if (GetProjectileType() == EProjectileType::Projectile) {
+			GetEnemyCharacter()->ShootProjectile(GetShotSpreadInDegrees(), ShotStart, ShotDirection * GetProjectileVelocity(), GetDamage());
+		}
+		
+		if (IsWeaponShotgun() == false) break;
+	}
 	
-	if (!SpawnedProjectile) return;
+	// if (GetCanShoot() == false) return;
+	//
+	// const TSubclassOf<AActor> ProjectileActor = GetEnemyCharacter()->EquippedWeapon.GetRow<FWeaponData>("")->ProjectileActor;
+	// AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
+	//
+	// float FireRate = GetEnemyCharacter()->GetEquippedWeaponData().FireRate * (GetEnemyCharacter()->GetEquippedWeaponData().FireRate / 60);
+	// if (FireRate == 0) FireRate = 0.5f;
+	//
+	// GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &ABaseEnemyAIController::CanShootEnable, FireRate, false);
+	//
+	// if (!SpawnedProjectile) return;
+	//
+	// const FVector Origin = GetEnemyCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation();
+	//
+	// SpawnedProjectile->SetActorLocation(Origin);
+	// SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = Velocity * GetEnemyCharacter()->GetActorRotation().Vector();
+	//
+	// CanShootDisable();
+}
 
-	const FVector Origin = GetEnemyCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation();
-	
-	SpawnedProjectile->SetActorLocation(Origin);
-	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = Velocity * GetEnemyCharacter()->GetActorRotation().Vector();
+float ABaseEnemyAIController::GetShotSpreadInDegrees()
+{
+	return GetEquippedWeaponData().SpreadInDegrees;
+}
 
-	CanShootDisable();
+FWeaponData ABaseEnemyAIController::GetEquippedWeaponData()
+{
+	return GetEnemyCharacter()->GetEquippedWeaponData();
 }
 
 void ABaseEnemyAIController::Tick(float DeltaTime)
