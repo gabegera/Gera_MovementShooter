@@ -110,7 +110,7 @@ void ABaseEnemyAIController::Shoot(FVector TargetLocation)
 			GetEnemyCharacter()->ShootHitscan(GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetDamage());
 		}
 		else if (GetProjectileType() == EProjectileType::Projectile) {
-			GetEnemyCharacter()->ShootProjectile(GetShotSpreadInDegrees(), ShotStart, ShotDirection * GetProjectileVelocity(), GetDamage());
+			GetEnemyCharacter()->ShootProjectile(GetProjectileActor(), GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetProjectileVelocity(), GetDamage());
 		}
 		
 		if (IsWeaponShotgun() == false) break;

@@ -109,11 +109,35 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
-	FVector2D HipfireRecoil;
+	float HipfireRecoilMinX;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	float HipfireRecoilMaxX;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
-	FVector2D AimingRecoil;
+	float HipfireRecoilY;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	float AimingRecoilMinX;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	float AimingRecoilMaxX;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	float AimingRecoilY;
+	
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	// meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	// FVector2D HipfireRecoil;
+	//
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	// meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Recoil Settings")
+	// FVector2D AimingRecoil;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (Tooltip = "Set to 0 for infinite ammo.",

@@ -54,7 +54,7 @@ void AShooterCharacter::OnConstruction(const FTransform& Transform)
 
 FWeaponData AShooterCharacter::GetEquippedWeaponData()
 {
-	if (!EquippedWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
+	if (EquippedWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
 	
 	return *EquippedWeapon.GetRow<FWeaponData>("");
 }
@@ -221,21 +221,17 @@ void AShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector 
 	}
 }
 
-void AShooterCharacter::ShootProjectile(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector Velocity, float Damage)
+void AShooterCharacter::ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage)
 {
-	SetActorEnableCollision(false);
-	const TSubclassOf<AActor> ProjectileActor = EquippedWeapon.GetRow<FWeaponData>("")->ProjectileActor;
 	AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
-
-	if (!SpawnedProjectile)
-	{
-		SetActorEnableCollision(true);
-		return;
-	}
 	
 	SpawnedProjectile->SetActorLocation(ShotOrigin);
-	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = Velocity;
-	SetActorEnableCollision(true);
+	
+	FVector ShotDirection = UKismetMathLibrary::GetDirectionUnitVector(ShotOrigin, ShotTarget);
+	ShotDirection = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ShotDirection, WeaponSpreadInDegrees / 2);
+	const FVector NewVelocity = ShotDirection * ProjectileVelocity;
+	
+	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = NewVelocity;
 }
 
 // Called every frame

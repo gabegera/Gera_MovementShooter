@@ -70,7 +70,7 @@ public:
 	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotTarget, float Damage);
 	
 	UFUNCTION(BlueprintCallable)
-	void ShootProjectile(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector Velocity, float Damage);
+	void ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -92,7 +92,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Shooting/Weapons")
 	FTimeline AimingTimeline;
-
 	
 	// ------ RECOIL ------
 
@@ -101,6 +100,10 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector2D RecoilProgress = FVector2D::ZeroVector;
+
+	// A Cache of Total Recoil Added, Used In Recoil Recovery.
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D RecoilCache = FVector2D::ZeroVector;
 
 	UFUNCTION(BlueprintCallable)
 	void AddRecoil(FVector2D RecoilAmount);
@@ -154,14 +157,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Move(float InputX, float InputY);
 
-	UPROPERTY()
-	FVector2D LookInput;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D GetLookInput() { return LookInput; }
-
 	UFUNCTION(BlueprintCallable)
-	void AddLookInput(const FVector2D Input);
+	void AddLookInput(FVector2D Input);
 
 	UFUNCTION(BlueprintCallable)
 	void Jump();
@@ -217,6 +214,9 @@ public:
 	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeaponData().ProjectileActor;}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -226,10 +226,10 @@ public:
 	FVector GetMuzzleLocation() { return GetPlayerCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D GetHipfireRecoil() { return GetEquippedWeaponData().HipfireRecoil; }
+	FVector2D GetHipfireRecoil();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D GetAimingRecoil() { return GetEquippedWeaponData().AimingRecoil; }
+	FVector2D GetAimingRecoil();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetFireRate() { return GetEquippedWeaponData().FireRate; }

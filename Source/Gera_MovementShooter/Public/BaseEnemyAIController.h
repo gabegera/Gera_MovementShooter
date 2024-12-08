@@ -71,6 +71,9 @@ public:
 	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeaponData().ProjectileActor;}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -78,12 +81,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetMuzzleLocation() { return GetEnemyCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D GetHipfireRecoil() { return GetEquippedWeaponData().HipfireRecoil; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D GetAimingRecoil() { return GetEquippedWeaponData().AimingRecoil; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetFireRate() { return GetEquippedWeaponData().FireRate; }

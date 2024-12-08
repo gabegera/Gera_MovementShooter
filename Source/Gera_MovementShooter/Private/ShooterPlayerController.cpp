@@ -82,15 +82,21 @@ void AShooterPlayerController::Move(float InputX, float InputY)
 }
 
 
-void AShooterPlayerController::AddLookInput(const FVector2D Input)
+void AShooterPlayerController::AddLookInput(FVector2D Input)
 {
-	float Sensitivity;
-	if (IsAiming()) Sensitivity = MouseSensitivity / GetEquippedWeaponData().ZoomMultiplier;
-	else Sensitivity = MouseSensitivity;
+	if (IsAiming()) Input *= MouseSensitivity / GetEquippedWeaponData().ZoomMultiplier;
+	else Input *= MouseSensitivity;
+
+	if (RecoilCache != FVector2D::ZeroVector)
+	{
+		RecoilCache.Y -= FMath::Abs(Input.Y);
+		if (RecoilCache.Y < 0) RecoilCache.Y = 0;
+	}
 	
-	AddYawInput(Input.X * Sensitivity);
-	AddPitchInput(Input.Y * Sensitivity);
-	//GEngine->AddOnScreenDebugMessage(4, 0.2f, FColor::Red, "Look Updated: " + Input.ToString());
+	if (GetWorldTimerManager().IsTimerActive(RecoilTimer) == false) RecoilCache = FVector2D::ZeroVector;
+	
+	AddYawInput(Input.X);
+	AddPitchInput(Input.Y);
 }
 
 void AShooterPlayerController::Jump()
@@ -123,10 +129,6 @@ FWeaponData AShooterPlayerController::GetEquippedWeaponData()
 	return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("");
 }
 
-
-
-
-
 void AShooterPlayerController::ChargeShot(float MaxCharge)
 {
 	if (PlayerCharacter->InventoryComponent->GetAmmo(EAmmoType::EnergyAmmo) <= 0)
@@ -147,8 +149,8 @@ void AShooterPlayerController::ChargeShot(float MaxCharge)
 
 void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 {
-	float Damage = GetDamage();
-	if (IsDamageBoostActive) Damage *= DamageBoostMultiplier;
+	float DamageAfterMultiplier = GetDamage();
+	if (IsDamageBoostActive) DamageAfterMultiplier *= DamageBoostMultiplier;
 
 	if (!InfiniteAmmo)
 	{
@@ -156,9 +158,11 @@ void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 		if (FireRate > 0 || (!SemiAutoCanFire && !GetEquippedWeaponData().CanCharge)) return;
 	}
 
+	//Shot Starts at Player Camera with an offset of 10.0f
 	FVector ShotStart = GetFPCameraLocation() + GetFPCameraForward() * 10.0f + GetFPCameraUp() * 10.0f;
 	FVector ShotTarget = GetFPCameraLocation() + GetFPCameraForward() * 50000.0f;
-	
+
+	// If Player has a weapon
 	if (GetPlayerCharacter()->WeaponChildComponent->GetChildActor())
 	{
 		ShotStart = GetMuzzleLocation();
@@ -176,10 +180,10 @@ void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 		if (i == 0) i++;
 		
 		if (GetProjectileType() == EProjectileType::Hitscan) {
-			GetPlayerCharacter()->ShootHitscan(GetShotSpreadInDegrees(), ShotStart, ShotTarget, Damage);
+			GetPlayerCharacter()->ShootHitscan(GetShotSpreadInDegrees(), ShotStart, ShotTarget, DamageAfterMultiplier);
 		}
 		else if (GetProjectileType() == EProjectileType::Projectile) {
-        	GetPlayerCharacter()->ShootProjectile(GetShotSpreadInDegrees(), ShotStart, GetFPCameraForward() * GetProjectileVelocity(), Damage);
+        	GetPlayerCharacter()->ShootProjectile(GetProjectileActor(), GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetProjectileVelocity(), DamageAfterMultiplier);
         }
 		
 		if (IsWeaponShotgun() == false) break;
@@ -238,12 +242,13 @@ void AShooterPlayerController::AddRecoil(FVector2D RecoilAmount)
 {
 	if (RecoilTarget == FVector2D::ZeroVector)
 	{
-		RecoilTarget = FVector2D(FMath::RandRange(-RecoilAmount.X, RecoilAmount.X), -RecoilAmount.Y);
+		RecoilTarget = RecoilAmount;;
 	}
 	else
 	{
-		RecoilTarget += FVector2D(FMath::RandRange(-RecoilAmount.X, RecoilAmount.X), -RecoilAmount.Y);
+		RecoilTarget += RecoilAmount;
 		RecoilProgress = FVector2D::ZeroVector;
+		RecoilCache = FVector2D::ZeroVector;
 	}
 
 	if (RecoilProgress != RecoilTarget)
@@ -267,7 +272,9 @@ void AShooterPlayerController::UpdateRecoil()
 		RecoilProgress = FMath::Vector2DInterpTo(RecoilProgress, RecoilTarget, GetWorld()->DeltaTimeSeconds, 80.0f);
 		DeltaRecoilProgress = RecoilProgress - PreviousRecoilProgress;
 		
-		AddLookInput(DeltaRecoilProgress);
+		AddYawInput(DeltaRecoilProgress.X);
+		AddPitchInput(DeltaRecoilProgress.Y);
+		RecoilCache += DeltaRecoilProgress;
 
 		GetWorldTimerManager().SetTimer(RecoilTimer, this, &AShooterPlayerController::UpdateRecoil, 0.0001f, false);
 	}
@@ -373,10 +380,28 @@ void AShooterPlayerController::UseBuffItem()
 	PlayerInventoryComp->SupportItemSlot = Empty;
 }
 
+FVector2D AShooterPlayerController::GetHipfireRecoil()
+{
+	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().HipfireRecoilMinX, GetEquippedWeaponData().HipfireRecoilMaxX);
+	const float RecoilY = GetEquippedWeaponData().HipfireRecoilY;
+
+	return FVector2D(RecoilX, RecoilY);
+}
+
+FVector2D AShooterPlayerController::GetAimingRecoil()
+{
+	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().AimingRecoilMinX, GetEquippedWeaponData().AimingRecoilMaxX);
+	const float RecoilY = GetEquippedWeaponData().AimingRecoilY;
+
+	return FVector2D(RecoilX, RecoilY);
+}
+
 
 void AShooterPlayerController::Tick(float DeltaTime)
 {
 	if (IsDamageBoostActive) GEngine->AddOnScreenDebugMessage(10, 0.2f, FColor::Red, TEXT("Damage Boost Active"));
+
+	GEngine->AddOnScreenDebugMessage(4, 0.2f, FColor::Red, "Recoil Cache: " + RecoilCache.ToString());
 	
 	// ------ DASHING ------
 	
