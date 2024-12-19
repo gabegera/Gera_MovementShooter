@@ -6,16 +6,18 @@
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
 #include "GameFramework/Character.h"
-#include "ShooterCharacter.generated.h"
+#include "BaseShooterCharacter.generated.h"
+
+class APickupObject;
 
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API AShooterCharacter : public ACharacter
+class GERA_MOVEMENTSHOOTER_API ABaseShooterCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AShooterCharacter();
+	ABaseShooterCharacter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UChildActorComponent* WeaponChildComponent = nullptr;
@@ -51,7 +53,7 @@ protected:
     virtual void EquipWeapon(FDataTableRowHandle NewWeapon);
     
     UPROPERTY()
-    TSet<AActor*> PickupSet;
+    TSet<APickupObject*> PickupSet;
 
 public:	
 	// Called to bind functionality to input
@@ -61,7 +63,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	AActor* FindClosestPickup();
+	APickupObject* FindClosestPickup();
 
 	UFUNCTION(BlueprintCallable)
 	void PickupItem();

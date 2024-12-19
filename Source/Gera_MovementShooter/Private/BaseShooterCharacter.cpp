@@ -1,10 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ShooterCharacter.h"
+#include "BaseShooterCharacter.h"
 
 #include "ExplosiveComponent.h"
-#include "PickupComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PickupObject.h"
 #include "Engine/DamageEvents.h"
@@ -12,7 +11,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
-AShooterCharacter::AShooterCharacter()
+ABaseShooterCharacter::ABaseShooterCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -20,17 +19,17 @@ AShooterCharacter::AShooterCharacter()
 }
 
 // Called when the game starts or when spawned
-void AShooterCharacter::BeginPlay()
+void ABaseShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &AShooterCharacter::BeginOverlap);
-	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &AShooterCharacter::EndOverlap);
+	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &ABaseShooterCharacter::BeginOverlap);
+	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &ABaseShooterCharacter::EndOverlap);
 
 	//if (!InventoryComponent->PrimaryWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
 }
 
-void AShooterCharacter::OnConstruction(const FTransform& Transform)
+void ABaseShooterCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
@@ -52,32 +51,36 @@ void AShooterCharacter::OnConstruction(const FTransform& Transform)
 	
 }
 
-FWeaponData AShooterCharacter::GetEquippedWeaponData()
+FWeaponData ABaseShooterCharacter::GetEquippedWeaponData()
 {
 	if (EquippedWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
 	
 	return *EquippedWeapon.GetRow<FWeaponData>("");
 }
 
-void AShooterCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABaseShooterCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->GetComponentByClass<UPickupComponent>() &&
-		OtherActor->GetComponentByClass<UPickupComponent>()->GetPickupType() == EPickupType::Weapon ||
-		OtherActor->GetComponentByClass<UPickupComponent>()->GetPickupType() == EPickupType::Buff)
+	if (OtherActor->GetClass() == APickupObject::StaticClass())
 	{
-		PickupSet.Add(OtherActor);
+		APickupObject* OverlappedPickup = Cast<APickupObject>(OtherActor);
+
+		if (OverlappedPickup->GetPickupType() != EPickupType::Ammo &&
+			OverlappedPickup->GetPickupType() != EPickupType::Equipment)
+		{
+			PickupSet.Add(OverlappedPickup);
+		}
 	}
 }
 
-void AShooterCharacter::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ABaseShooterCharacter::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->GetComponentByClass<UPickupComponent>())
+	if (OtherActor->GetClass() == APickupObject::StaticClass())
 	{
-		PickupSet.Remove(OtherActor);
+		PickupSet.Remove(Cast<APickupObject>(OtherActor));
 	}
 }
 
-float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float ABaseShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	GEngine->AddOnScreenDebugMessage(0, 0.5f, FColor::White, "PLAYER TOOK DAMAGE");
 
@@ -89,14 +92,14 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	return Damage;
 }
 
-AActor* AShooterCharacter::FindClosestPickup()
+APickupObject* ABaseShooterCharacter::FindClosestPickup()
 {
 	if (PickupSet.Num() <= 0) return nullptr;
 	
-	TMap<float, AActor*> PickupsMap;
+	TMap<float, APickupObject*> PickupsMap;
 	
 	float DistanceFromPickup = std::numeric_limits<float>::max();
-	for (AActor* Pickup : PickupSet)
+	for (APickupObject* Pickup : PickupSet)
 	{
 		PickupsMap.Add(GetDistanceTo(Pickup), Pickup);
 		if (GetDistanceTo(Pickup) < DistanceFromPickup) DistanceFromPickup = GetDistanceTo(Pickup);
@@ -105,23 +108,22 @@ AActor* AShooterCharacter::FindClosestPickup()
 	return PickupsMap[DistanceFromPickup];
 }
 
-void AShooterCharacter::PickupItem()
+void ABaseShooterCharacter::PickupItem()
 {
 	if (PickupSet.Num() <= 0) return;
 
-	AActor* ClosestPickup = FindClosestPickup();
-	UPickupComponent* PickupComponent = ClosestPickup->GetComponentByClass<UPickupComponent>();
-	EPickupType ClosestPickupType = PickupComponent->GetPickupType();
+	APickupObject* ClosestPickup = FindClosestPickup();
+	EPickupType ClosestPickupType = ClosestPickup->GetPickupType();
 
 	if (ClosestPickupType == EPickupType::Weapon)
 	{
-		FWeaponData PickupWeaponData = PickupComponent->GetWeaponPickupData();
-		FDataTableRowHandle NewWeapon = PickupComponent->GetWeaponPickup();
+		FWeaponData PickupWeaponData = ClosestPickup->GetWeaponPickupData();
+		FDataTableRowHandle NewWeapon = ClosestPickup->GetWeaponPickup();
 		
 		switch (PickupWeaponData.WeaponSlot)
 		{
 		case EWeaponSlot::Primary:
-			EquipWeapon(PickupComponent->GetWeaponPickup());
+			EquipWeapon(ClosestPickup->GetWeaponPickup());
 			if (InventoryComponent->PrimaryWeapon.IsNull())
 			{
 				Cast<APickupObject>(ClosestPickup)->Destroy();
@@ -130,7 +132,7 @@ void AShooterCharacter::PickupItem()
 			break;
 			
 		case EWeaponSlot::Secondary:
-			EquipWeapon(PickupComponent->GetWeaponPickup());
+			EquipWeapon(ClosestPickup->GetWeaponPickup());
 			if (InventoryComponent->SecondaryWeapon.IsNull())
 			{
 				Cast<APickupObject>(ClosestPickup)->Destroy();
@@ -139,7 +141,7 @@ void AShooterCharacter::PickupItem()
 			break;
 			
 		case EWeaponSlot::Heavy:
-			EquipWeapon(PickupComponent->GetWeaponPickup());
+			EquipWeapon(ClosestPickup->GetWeaponPickup());
 			if (InventoryComponent->HeavyWeapon.IsNull())
 			{
 				Cast<APickupObject>(ClosestPickup)->Destroy();
@@ -158,16 +160,16 @@ void AShooterCharacter::PickupItem()
 	}
 	else if (ClosestPickupType == EPickupType::Buff)
 	{
-		FItemData PickupItemData = PickupComponent->GetItemPickupData();
+		FItemData PickupItemData = ClosestPickup->GetItemPickupData();
 		
 		if (InventoryComponent->SupportItemSlot.IsNull())
 		{
-			InventoryComponent->SwapSupportItem(PickupComponent->GetItemPickup());
+			InventoryComponent->SwapSupportItem(ClosestPickup->GetItemPickup());
 			ClosestPickup->Destroy();
 		}
 		else
 		{
-			FDataTableRowHandle NewItem = PickupComponent->GetItemPickup();
+			FDataTableRowHandle NewItem = ClosestPickup->GetItemPickup();
 			Cast<APickupObject>(ClosestPickup)->SetItemPickup(InventoryComponent->SupportItemSlot);
 			InventoryComponent->SwapSupportItem(NewItem);
 		}
@@ -176,7 +178,7 @@ void AShooterCharacter::PickupItem()
 	}
 }
 
-void AShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
+void ABaseShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
 {
 	if (EquippedWeapon == NewWeapon) return;
 	if (NewWeapon.IsNull()) return;
@@ -189,7 +191,7 @@ void AShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
     	}
 }
 
-void AShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector ShotOrigin, FVector ShotTarget, float Damage)
+void ABaseShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector ShotOrigin, FVector ShotTarget, float Damage)
 {
 	FHitResult Hit;
 	FCollisionQueryParams IgnorePlayer;
@@ -221,7 +223,7 @@ void AShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector 
 	}
 }
 
-void AShooterCharacter::ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage)
+void ABaseShooterCharacter::ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage)
 {
 	AActor* SpawnedProjectile = GetWorld()->SpawnActor(ProjectileActor);
 	
@@ -235,7 +237,7 @@ void AShooterCharacter::ShootProjectile(const TSubclassOf<AActor> ProjectileActo
 }
 
 // Called every frame
-void AShooterCharacter::Tick(float DeltaTime)
+void ABaseShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

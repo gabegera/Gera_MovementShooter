@@ -7,7 +7,7 @@
 #include "BaseEnemyCharacter.generated.h"
 
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API ABaseEnemyCharacter : public AShooterCharacter 
+class GERA_MOVEMENTSHOOTER_API ABaseEnemyCharacter : public ABaseShooterCharacter 
 {
 	GENERATED_BODY()
 

@@ -31,13 +31,7 @@ void AShooterPlayerController::BeginPlay()
 		// Add each mapping context, along with their priority values. Higher values out prioritize lower values.
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
-
-	FOnTimelineFloat ProgressUpdate;
-	ProgressUpdate.BindUFunction(this, FName("UpdateDash"));
-
-	DashTimeline.AddInterpFloat(DashCurve, ProgressUpdate);
 }
-
 
 void AShooterPlayerController::UseSpeedBoost()
 {
@@ -112,6 +106,20 @@ void AShooterPlayerController::Dash()
 	DashCooldownValue = DashCooldownLength;
 }
 
+bool AShooterPlayerController::CanFire()
+{
+	if (InfiniteAmmo == false)
+	{
+		if (FireRate > 0 && GetEquippedWeaponAmmo() > 0) return false;
+	}
+	else
+	{
+		if (FireRate <= 0) return true;
+	}
+
+	return false;
+}
+
 
 void AShooterPlayerController::Crouch()
 {
@@ -139,7 +147,7 @@ void AShooterPlayerController::ChargeShot(float MaxCharge)
 
 	if (CurrentWeaponCharge < MaxCharge)
 	{
-		CurrentWeaponCharge += CurrentDeltaTime;
+		CurrentWeaponCharge += GetWorld()->DeltaTimeSeconds;
 	}
 	else
 	{
@@ -147,45 +155,43 @@ void AShooterPlayerController::ChargeShot(float MaxCharge)
 	}
 }
 
-void AShooterPlayerController::Shoot(bool InfiniteAmmo)
+void AShooterPlayerController::Shoot()
 {
+	if (CanFire() == false) return;
+	
 	float DamageAfterMultiplier = GetDamage();
 	if (IsDamageBoostActive) DamageAfterMultiplier *= DamageBoostMultiplier;
 
-	if (!InfiniteAmmo)
-	{
-		if (GetInventory()->GetAmmo(GetAmmoType()) <= 0) return;
-		if (FireRate > 0 || (!SemiAutoCanFire && !GetEquippedWeaponData().CanCharge)) return;
-	}
-
-	//Shot Starts at Player Camera with an offset of 10.0f
-	FVector ShotStart = GetFPCameraLocation() + GetFPCameraForward() * 10.0f + GetFPCameraUp() * 10.0f;
+	// Shot Starts at Player Camera Position.
+	// There is a forward and down offset added so that the projectile starts just below the camera.
+	FVector ShotStart = GetFPCameraLocation() + GetFPCameraForward() * 10.0f + GetFPCameraUp() * -10.0f;
 	FVector ShotTarget = GetFPCameraLocation() + GetFPCameraForward() * 50000.0f;
 
 	// If Player has a weapon
 	if (GetPlayerCharacter()->WeaponChildComponent->GetChildActor())
 	{
+		// Change the Shot start position to the muzzle of the weapon.
 		ShotStart = GetMuzzleLocation();
 
+		// Uses a Line Trace to get a more accurate Shot Target Position.
 		FHitResult Hit;
 		FCollisionQueryParams IgnorePlayer;
 		IgnorePlayer.AddIgnoredActor(GetPlayerCharacter()->GetUniqueID());
 		GetWorld()->LineTraceSingleByChannel(Hit, GetFPCameraLocation(), GetFPCameraLocation() + GetFPCameraForward() * 50000.0f, ECC_PhysicsBody, IgnorePlayer);
-		
 		ShotTarget = Hit.bBlockingHit ? Hit.ImpactPoint : Hit.TraceEnd;
 	}
-	
+
+	// Shoots for every pellet the weapon has. Will only fire once if weapon is not a shotgun.
 	for (int i = 0; i <= GetPelletCount(); i++)
 	{
-		if (i == 0) i++;
-		
 		if (GetProjectileType() == EProjectileType::Hitscan) {
 			GetPlayerCharacter()->ShootHitscan(GetShotSpreadInDegrees(), ShotStart, ShotTarget, DamageAfterMultiplier);
 		}
 		else if (GetProjectileType() == EProjectileType::Projectile) {
         	GetPlayerCharacter()->ShootProjectile(GetProjectileActor(), GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetProjectileVelocity(), DamageAfterMultiplier);
         }
-		
+
+		// If the Weapon is not a shotgun break the loop.
 		if (IsWeaponShotgun() == false) break;
 	}
 	
@@ -197,9 +203,13 @@ void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 	
 	if (GetWeaponType() == EWeaponType::Automatic)
 	{
+		// Resets fire rate.
 		FireRate = GetFireRate();
 	}
-	else SemiAutoCanFire = false;
+	else if (GetWeaponType() == EWeaponType::SemiAutomatic)
+	{
+		FireRate = MAX_FLT;
+	}
 }
 
 float AShooterPlayerController::GetShotSpreadInDegrees()
@@ -269,7 +279,7 @@ void AShooterPlayerController::UpdateRecoil()
 	if (RecoilTarget != FVector2D::ZeroVector && RecoilProgress != RecoilTarget)
 	{
 		const FVector2D PreviousRecoilProgress = RecoilProgress;
-		RecoilProgress = FMath::Vector2DInterpTo(RecoilProgress, RecoilTarget, GetWorld()->DeltaTimeSeconds, 80.0f);
+		RecoilProgress = FMath::Vector2DInterpTo(RecoilProgress, RecoilTarget, GetWorld()->DeltaTimeSeconds, RecoilInterpSpeed);
 		DeltaRecoilProgress = RecoilProgress - PreviousRecoilProgress;
 		
 		AddYawInput(DeltaRecoilProgress.X);
@@ -294,7 +304,6 @@ void AShooterPlayerController::ResetWeapon()
 {
 	FireRate = 0;
 	CurrentWeaponCharge = 0;
-	SemiAutoCanFire = true;
 	RecoilTarget = FVector2D::ZeroVector;
 	RecoilProgress = FVector2D::ZeroVector;
 

@@ -30,6 +30,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	// ------ COMPONENTS AND POINTERS ------
+	
 	UPROPERTY(BlueprintReadOnly)
 	AShooterPlayerCharacter* PlayerCharacter;
 
@@ -39,8 +41,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	UInventoryComponent* PlayerInventoryComp;
 
-	float CurrentDeltaTime;
+	// ------ INPUT ------
 
+	// Default Mapping Context used for Enhanced Input.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* DefaultMappingContext;
 
@@ -52,11 +55,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	float DashVelocity = 20.0f;
 
+	UPROPERTY()
 	FVector DashDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dash")
 	UCurveFloat* DashCurve = nullptr;
-	
+
+	UPROPERTY()
 	FTimeline DashTimeline;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dash")
@@ -67,55 +72,62 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void Dash();
-
-	
 	
 	// ------ SHOOTING AND WEAPONS ------
-	
+
+	// Arrow Component of Weapon located at the Muzzle.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UArrowComponent* MuzzleArrowComponent;
 
+	// Used for weapons capable of Charging up a more powerful attack.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float CurrentWeaponCharge = 0.0f;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shooting/Weapons")
 	float FireRate;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Shooting/Weapons")
-	bool SemiAutoCanFire;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shooting/Weapons")
+	bool InfiniteAmmo = false;
+
+	// Boolean used to control when the player is able to shoot their weapon.
+	UFUNCTION(BlueprintCallable)
+	bool CanFire();
+
+	// Velocity of Thrown equipment.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Equipment")
 	float ThrowableVelocity = 400.0f;
 
+	// Caches the Default FOV to return to when the player stops aiming.
 	UPROPERTY()
 	float DefaultFOV;
-
-	UPROPERTY(EditAnywhere, Category = "Shooting/Weapons")
-	FTimeline AimingTimeline;
 	
 	// ------ RECOIL ------
 
+	// The Target Position that the Recoil will Interpolate Torwards.
 	UPROPERTY(BlueprintReadOnly)
 	FVector2D RecoilTarget = FVector2D::ZeroVector;
-	
+
+	// The Progress of the Recoils Interpolation Towards RecoilTarget.
 	UPROPERTY(BlueprintReadOnly)
 	FVector2D RecoilProgress = FVector2D::ZeroVector;
+
+	// How Quickly the Recoil Will Interpolate to the RecoilTarget.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Recoil")
+	float RecoilInterpSpeed = 60.0f;
 
 	// A Cache of Total Recoil Added, Used In Recoil Recovery.
 	UPROPERTY(BlueprintReadOnly)
 	FVector2D RecoilCache = FVector2D::ZeroVector;
 
+	// Creates a RecoilTarget that will be interpolated towards.
 	UFUNCTION(BlueprintCallable)
 	void AddRecoil(FVector2D RecoilAmount);
 
+	// Timer that Updates Recoil Interpolation every frame.
+	UPROPERTY()
 	FTimerHandle RecoilTimer;
 
-	// UPROPERTY(BlueprintReadWrite)
-	// FVector2D MouseRecoilReturnLimit = FVector2D(5, 5);
-	//
-	// UPROPERTY(BlueprintReadWrite)
-	// FVector2D MouseRecoilTracker = FVector2D::ZeroVector;
-
+	// Function that gets called by RecoilTimer to Update RecoilProgress.
 	UFUNCTION()
 	void UpdateRecoil();
 
@@ -132,9 +144,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buffs")
 	float SlowTimeDivision = 3.0f;
 
+	// Timer used to manage how long the Buff will be active.
 	UPROPERTY()
 	FTimerHandle BuffTimer;
-
+	
 	UFUNCTION(BlueprintCallable)
 	void UseSpeedBoost();
 
@@ -152,11 +165,13 @@ protected:
 
 	UFUNCTION()
 	void StopSlowTime() const;
-	
+
+	// ------ MOVEMENT ------
 
 	UFUNCTION(BlueprintCallable)
 	void Move(float InputX, float InputY);
 
+	// Used to Rotate the First Person Camera
 	UFUNCTION(BlueprintCallable)
 	void AddLookInput(FVector2D Input);
 
@@ -169,15 +184,20 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopCrouch();
 
+	// ------ SHOOTING / WEAPONS ------
+
+	// Returns the Data of the currently equipped weapon from the WeaponData Data Table.
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FWeaponData GetEquippedWeaponData();
 
+	// Charges the shot allowing for more damage.
 	UFUNCTION(BlueprintCallable)
 	void ChargeShot(float MaxCharge);
 
 	UFUNCTION(BlueprintCallable)
-	void Shoot(bool InfiniteAmmo = false);
+	void Shoot();
 
+	// Returns how much spread the weapon will have in degrees.
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetShotSpreadInDegrees();
 
@@ -187,9 +207,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAiming();
 
+	// Returns true if the player is aiming/zooming in their weapon.
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsAiming();
 
+	// Resets weapon variables when trigger of weapon is released.
 	UFUNCTION(BlueprintCallable)
 	void ResetWeapon();
 
@@ -201,14 +223,28 @@ protected:
 
 public:
 
+	// ------ PLAYER AND COMPONENT GETTERS ------
+	
+	// Gets ShooterPlayerCharacter.
+	UFUNCTION(BlueprintCallable)
 	AShooterPlayerCharacter* GetPlayerCharacter() const { return PlayerCharacter; }
 
+	// Gets ShooterPlayerCharacter's Inventory Component.
+	UFUNCTION(BlueprintCallable)
 	UInventoryComponent* GetInventory() const { return GetPlayerCharacter()->InventoryComponent;}
 
+	// Gets ShooterPlayerCharacter's Health Component.
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const { return PlayerHealthComp; }
+
 	// ------ WEAPON DATA GETTERS ------
+	// These are Getters to make Getting Different Weapon Variables faster and cleaner.
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EAmmoType GetAmmoType() { return GetEquippedWeaponData().AmmoType; }
+
+	UFUNCTION(Blueprintcallable, BlueprintPure)
+	int32 GetEquippedWeaponAmmo() { return GetInventory()->GetAmmo(GetAmmoType()); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
@@ -223,7 +259,7 @@ public:
 	float GetProjectileVelocity() { return GetEquippedWeaponData().ProjectileVelocity; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetMuzzleLocation() { return GetPlayerCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
+	FVector GetMuzzleLocation() const { return GetPlayerCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector2D GetHipfireRecoil();
@@ -247,18 +283,21 @@ public:
 	float GetMaxChargeTime() { return GetEquippedWeaponData().MaxChargeTime; }
 
 	// ------ CAMERA GETTERS ------
+	// Getters to make getting the Player's First Person Camera and it's variables faster and cleaner.
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UCameraComponent* GetFPCamera() { return GetPlayerCharacter()->GetFirstPersonCameraComponent(); }
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetFPCameraLocation() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetComponentLocation(); }
+	FVector GetFPCameraLocation() const { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetComponentLocation(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetFPCameraForward() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetForwardVector(); }
+	FVector GetFPCameraForward() const { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetForwardVector(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetFPCameraUp() { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetUpVector(); }
+	FVector GetFPCameraUp() const { return GetPlayerCharacter()->GetFirstPersonCameraComponent()->GetUpVector(); }
+
+	// ------ TICK ------
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
