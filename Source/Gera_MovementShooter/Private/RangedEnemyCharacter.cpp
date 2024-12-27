@@ -12,7 +12,7 @@ void ARangedEnemyCharacter::BeginPlay()
 
 void ARangedEnemyCharacter::PickupWeapon(APickupObject* Pickup)
 {
-	InventoryComponent->SwapWeapons(EWeaponSlot::Primary, Pickup->GetWeaponPickup());
+	InventoryComponent->SwapWeapons(EWeaponSlot::Primary, Pickup->GetWeaponDataTableRowHandle());
 
-	WeaponChildComponent->SetChildActorClass(Pickup->GetWeaponPickupData().WeaponActor->GetClass());
+	WeaponChildComponent->SetChildActorClass(Pickup->GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->WeaponActor->GetClass());
 }

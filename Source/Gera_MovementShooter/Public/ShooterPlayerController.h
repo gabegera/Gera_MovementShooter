@@ -7,7 +7,7 @@
 #include "ShooterPlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "PickupObject.h"
-#include "WeaponData.h"
+#include "DataTables/WeaponData.h"
 #include "ItemData.h"
 #include "HealthComponent.h"
 #include "Components/TimelineComponent.h"

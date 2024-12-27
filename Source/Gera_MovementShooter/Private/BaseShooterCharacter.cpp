@@ -108,75 +108,75 @@ APickupObject* ABaseShooterCharacter::FindClosestPickup()
 	return PickupsMap[DistanceFromPickup];
 }
 
-void ABaseShooterCharacter::PickupItem()
-{
-	if (PickupSet.Num() <= 0) return;
-
-	APickupObject* ClosestPickup = FindClosestPickup();
-	EPickupType ClosestPickupType = ClosestPickup->GetPickupType();
-
-	if (ClosestPickupType == EPickupType::Weapon)
-	{
-		FWeaponData PickupWeaponData = ClosestPickup->GetWeaponPickupData();
-		FDataTableRowHandle NewWeapon = ClosestPickup->GetWeaponPickup();
-		
-		switch (PickupWeaponData.WeaponSlot)
-		{
-		case EWeaponSlot::Primary:
-			EquipWeapon(ClosestPickup->GetWeaponPickup());
-			if (InventoryComponent->PrimaryWeapon.IsNull())
-			{
-				Cast<APickupObject>(ClosestPickup)->Destroy();
-			}
-			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->PrimaryWeapon);
-			break;
-			
-		case EWeaponSlot::Secondary:
-			EquipWeapon(ClosestPickup->GetWeaponPickup());
-			if (InventoryComponent->SecondaryWeapon.IsNull())
-			{
-				Cast<APickupObject>(ClosestPickup)->Destroy();
-			}
-			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->SecondaryWeapon);
-			break;
-			
-		case EWeaponSlot::Heavy:
-			EquipWeapon(ClosestPickup->GetWeaponPickup());
-			if (InventoryComponent->HeavyWeapon.IsNull())
-			{
-				Cast<APickupObject>(ClosestPickup)->Destroy();
-			}
-			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->HeavyWeapon);
-			break;
-			
-		default:
-			break;
-		}
-		if (!NewWeapon.IsNull())
-		{
-			InventoryComponent->SwapWeapons(PickupWeaponData.WeaponSlot, NewWeapon);			
-		}
-
-	}
-	else if (ClosestPickupType == EPickupType::Buff)
-	{
-		FItemData PickupItemData = ClosestPickup->GetItemPickupData();
-		
-		if (InventoryComponent->SupportItemSlot.IsNull())
-		{
-			InventoryComponent->SwapSupportItem(ClosestPickup->GetItemPickup());
-			ClosestPickup->Destroy();
-		}
-		else
-		{
-			FDataTableRowHandle NewItem = ClosestPickup->GetItemPickup();
-			Cast<APickupObject>(ClosestPickup)->SetItemPickup(InventoryComponent->SupportItemSlot);
-			InventoryComponent->SwapSupportItem(NewItem);
-		}
-		
-		
-	}
-}
+// void ABaseShooterCharacter::PickupItem()
+// {
+// 	if (PickupSet.Num() <= 0) return;
+//
+// 	APickupObject* ClosestPickup = FindClosestPickup();
+// 	EPickupType ClosestPickupType = ClosestPickup->GetPickupType();
+//
+// 	if (ClosestPickupType == EPickupType::Weapon)
+// 	{
+// 		FWeaponData PickupWeaponData = ClosestPickup->GetWeaponPickupData();
+// 		FDataTableRowHandle NewWeapon = ClosestPickup->GetWeaponPickup();
+// 		
+// 		switch (PickupWeaponData.WeaponSlot)
+// 		{
+// 		case EWeaponSlot::Primary:
+// 			EquipWeapon(ClosestPickup->GetWeaponPickup());
+// 			if (InventoryComponent->PrimaryWeapon.IsNull())
+// 			{
+// 				Cast<APickupObject>(ClosestPickup)->Destroy();
+// 			}
+// 			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->PrimaryWeapon);
+// 			break;
+// 			
+// 		case EWeaponSlot::Secondary:
+// 			EquipWeapon(ClosestPickup->GetWeaponPickup());
+// 			if (InventoryComponent->SecondaryWeapon.IsNull())
+// 			{
+// 				Cast<APickupObject>(ClosestPickup)->Destroy();
+// 			}
+// 			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->SecondaryWeapon);
+// 			break;
+// 			
+// 		case EWeaponSlot::Heavy:
+// 			EquipWeapon(ClosestPickup->GetWeaponPickup());
+// 			if (InventoryComponent->HeavyWeapon.IsNull())
+// 			{
+// 				Cast<APickupObject>(ClosestPickup)->Destroy();
+// 			}
+// 			else Cast<APickupObject>(ClosestPickup)->SetWeaponPickup(InventoryComponent->HeavyWeapon);
+// 			break;
+// 			
+// 		default:
+// 			break;
+// 		}
+// 		if (!NewWeapon.IsNull())
+// 		{
+// 			InventoryComponent->SwapWeapons(PickupWeaponData.WeaponSlot, NewWeapon);			
+// 		}
+//
+// 	}
+// 	else if (ClosestPickupType == EPickupType::Buff)
+// 	{
+// 		FItemData PickupItemData = ClosestPickup->GetItemPickupData();
+// 		
+// 		if (InventoryComponent->SupportItemSlot.IsNull())
+// 		{
+// 			InventoryComponent->SwapSupportItem(ClosestPickup->GetItemPickup());
+// 			ClosestPickup->Destroy();
+// 		}
+// 		else
+// 		{
+// 			FDataTableRowHandle NewItem = ClosestPickup->GetItemPickup();
+// 			Cast<APickupObject>(ClosestPickup)->SetItemPickup(InventoryComponent->SupportItemSlot);
+// 			InventoryComponent->SwapSupportItem(NewItem);
+// 		}
+// 		
+// 		
+// 	}
+// }
 
 void ABaseShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
 {
@@ -234,6 +234,34 @@ void ABaseShooterCharacter::ShootProjectile(const TSubclassOf<AActor> Projectile
 	const FVector NewVelocity = ShotDirection * ProjectileVelocity;
 	
 	SpawnedProjectile->GetComponentByClass<UProjectileMovementComponent>()->Velocity = NewVelocity;
+}
+
+bool ABaseShooterCharacter::PickupAmmo_Implementation(const EAmmoType AmmoType, const int32 AmmoAmount)
+{
+	InventoryComponent->AddAmmo(AmmoType, AmmoAmount);
+	
+	return true;
+}
+
+bool ABaseShooterCharacter::PickupWeapon_Implementation(FDataTableRowHandle WeaponDataTableRowHandle)
+{
+	FWeaponData* WeaponData = WeaponDataTableRowHandle.GetRow<FWeaponData>("");
+
+	InventoryComponent->SwapWeapons(WeaponData->WeaponSlot, WeaponDataTableRowHandle);
+	
+	return true;
+}
+
+bool ABaseShooterCharacter::PickupConsumable_Implementation(const EConsumableEffect ConsumableEffect, const int32 ConsumableAmount)
+{
+	switch (ConsumableEffect)
+	{
+	case EConsumableEffect::Healing:
+		HealthComponent->AddHealth(ConsumableAmount);
+		break;
+	}
+	
+	return true;
 }
 
 // Called every frame

@@ -35,15 +35,26 @@ void APickupObject::BeginPlay()
 
 void APickupObject::BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->GetName().Contains("ShooterPlayerCharacter") && GetPickupType() == EPickupType::Ammo)
+	switch (GetPickupType())
 	{
-		OtherActor->GetComponentByClass<UInventoryComponent>()->AddAmmo(GetAmmoType(), 20);
-		Destroy();
-	}
-	else if (OtherActor->GetName().Contains("ShooterPlayerCharacter") && GetPickupType() == EPickupType::Equipment)
-	{
-		OtherActor->GetComponentByClass<UInventoryComponent>()->AddEquipment(GetItemPickupData().Name, 1);
-		Destroy();
+	case EPickupType::Weapon:
+		break;
+	case EPickupType::Ammo:
+		if (Execute_PickupConsumable(OtherActor, GetConsumableEffect(), GetPickupData().PickupAmount))
+		{
+			Destroy();
+		}
+		break;
+	case EPickupType::Ability:
+		break;
+	case EPickupType::Consumable:
+		if (Execute_PickupAmmo(OtherActor, GetAmmoType(), GetPickupData().PickupAmount))
+		{
+			Destroy();
+		}
+		break;
+	case EPickupType::Equipment:
+		break;
 	}
 }
 
@@ -62,54 +73,32 @@ void APickupObject::Tick(float DeltaTime)
 
 void APickupObject::SetOutlineColor(FLinearColor Color)
 {
-	if (!IsValid(OutlineMaterial)) return;
-	
-	if (!IsValid(DynamicOutline))
-	{
-		DynamicOutline = UMaterialInstanceDynamic::Create(OutlineMaterial, this);
-	}
+	if (!IsValid(OutlineMaterialInstance)) return;
+
+	UMaterialInstanceDynamic* DynamicOutline = UMaterialInstanceDynamic::Create(OutlineMaterialInstance, this);
 	
 	DynamicOutline->SetVectorParameterValue(FName("Color"), Color);
+	PickupMesh->SetOverlayMaterial(DynamicOutline);
 }
 
 void APickupObject::RefreshPickup()
 {
+	if (PickupDataTableRowHandle.IsNull() || PickupDataTableRowHandle.GetRow<FPickupData>("") == nullptr) return;
+	
+	SetOutlineColor(GetOutlineColor());
+	if (GetPickupMesh()) PickupMesh->SetStaticMesh(GetPickupMesh());
+	PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	
 	if (GetPickupType() == EPickupType::Ammo)
 	{
-		
 		switch (GetAmmoType())
 		{
-		case EAmmoType::PistolAmmo:
-			SetOutlineColor(FColor::Yellow);
-			PickupMesh->SetStaticMesh(GetPistolAmmoMesh());
-			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-			break;
 		case EAmmoType::RifleAmmo:
-			SetOutlineColor(FColor::Blue);
-			PickupMesh->SetStaticMesh(GetRifleAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
 			break;
+			
 		case EAmmoType::ShotgunAmmo:
-			SetOutlineColor(FColor::Orange);
-			PickupMesh->SetStaticMesh(GetShotgunAmmoMesh());
 			PickupMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-			break;
-		case EAmmoType::SniperAmmo:
-			SetOutlineColor(FColor::Purple);
-			PickupMesh->SetStaticMesh(GetSniperAmmoMesh());
-			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-			break;
-		case EAmmoType::ExplosiveAmmo:
-			SetOutlineColor(FColor::Red);
-			PickupMesh->SetStaticMesh(GetExplosiveAmmoMesh());
-			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-			break;
-		case EAmmoType::EnergyAmmo:
-			SetOutlineColor(FColor::Cyan);
-			PickupMesh->SetStaticMesh(GetEnergyAmmoMesh());
-			PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-			break;			
-		case EAmmoType::None:
 			break;
 		default:
 			break;
@@ -117,45 +106,26 @@ void APickupObject::RefreshPickup()
 	}
 	else if (GetPickupType() == EPickupType::Weapon)
 	{
-		
-		FWeaponData* WeaponData = GetWeaponPickup().GetRow<FWeaponData>("");
-
-		if(!WeaponData) return;
-		
-		PickupMesh->SetStaticMesh(WeaponData->StaticMesh);
+		if (!GetWeaponDataTableRowHandle().IsNull() && GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->StaticMesh)
+		{
+			PickupMesh->SetStaticMesh(GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->StaticMesh);
+		}
 		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 		//InteractSphereTrigger->SetSphereRadius(PickupMesh->Bounds.GetSphere().W * 2);
-
-		SetOutlineColor(GetWeaponPickupData().OutlineColor);
 	}
-	else if (GetPickupType() == EPickupType::Equipment)
-	{
-
-		PickupMesh->SetStaticMesh(GetItemPickupData().ItemMesh);
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-		SetOutlineColor(GetItemPickupData().OutlineColor);
-	}
-	else if (GetPickupType() == EPickupType::Buff)
-	{
-		PickupMesh->SetStaticMesh(GetItemPickupData().ItemMesh);
-		SetOutlineColor(GetItemPickupData().OutlineColor);
-		PickupMesh->SetRelativeRotation(FRotator(35.0f, 0.0f, 0.0f));
-	}
-
-	if (GetOutlineMaterial()) PickupMesh->SetOverlayMaterial(GetOutlineMaterial());
 }
 
-FDataTableRowHandle APickupObject::SetWeaponPickup(FDataTableRowHandle NewWeapon)
-{
-	WeaponPickup = NewWeapon;
-	RefreshPickup();
-	return WeaponPickup;
-}
-
-FDataTableRowHandle APickupObject::SetItemPickup(FDataTableRowHandle NewItem)
-{
-	ItemPickup = NewItem;
-	RefreshPickup();
-	return ItemPickup;
-}
+// FDataTableRowHandle APickupObject::SetWeaponPickup(FDataTableRowHandle NewWeapon)
+// {
+// 	WeaponPickup = NewWeapon;
+// 	RefreshPickup();
+// 	return WeaponPickup;
+// }
+//
+// FDataTableRowHandle APickupObject::SetItemPickup(FDataTableRowHandle NewItem)
+// {
+// 	ItemPickup = NewItem;
+// 	RefreshPickup();
+// 	return ItemPickup;
+// }
 

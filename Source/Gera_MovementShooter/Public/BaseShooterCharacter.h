@@ -6,12 +6,13 @@
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/PickupInterface.h"
 #include "BaseShooterCharacter.generated.h"
 
 class APickupObject;
 
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API ABaseShooterCharacter : public ACharacter
+class GERA_MOVEMENTSHOOTER_API ABaseShooterCharacter : public ACharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
@@ -65,8 +66,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	APickupObject* FindClosestPickup();
 
-	UFUNCTION(BlueprintCallable)
-	void PickupItem();
+	// UFUNCTION(BlueprintCallable)
+	// void PickupItem();
 
 	UFUNCTION(BlueprintCallable)
 	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotTarget, float Damage);
@@ -74,6 +75,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage);
 
+	UFUNCTION(BlueprintCallable)
+	bool PickupAmmo_Implementation(const EAmmoType AmmoType, const int32 AmmoAmount) override;
+
+	UFUNCTION(BlueprintCallable)
+	bool PickupWeapon_Implementation(FDataTableRowHandle WeaponDataTableRowHandle) override;
+
+	UFUNCTION(BlueprintCallable)
+	bool PickupConsumable_Implementation(const EConsumableEffect ConsumableEffect, const int32 ConsumableAmount) override;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

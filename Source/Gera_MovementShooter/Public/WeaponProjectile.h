@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponData.h"
+#include "DataTables/WeaponData.h"
 #include "HealthComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/Actor.h"

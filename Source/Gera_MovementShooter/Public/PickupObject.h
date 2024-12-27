@@ -4,24 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
-#include "WeaponData.h"
+#include "DataTables/WeaponData.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/PickupInterface.h"
 #include "Components/SphereComponent.h"
+#include "DataTables/PickupData.h"
 #include "PickupObject.generated.h"
 
 class AShooterPlayerCharacter;
 
-UENUM(BlueprintType)
-enum class EPickupType : uint8
-{
-	Ammo = 0 UMETA(DisplayName = "Ammo Pickup"),
-	Weapon = 1 UMETA(DisplayName = "Weapon Pickup"),
-	Equipment = 2 UMETA(DisplayName = "Equipment Pickup"),
-	Buff = 3 UMETA(DisplayName = "Buff Pickup"),
-};
-
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API APickupObject : public AActor
+class GERA_MOVEMENTSHOOTER_API APickupObject : public AActor, public IPickupInterface
 {
 	GENERATED_BODY()
 	
@@ -33,6 +26,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FDataTableRowHandle PickupDataTableRowHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* PickupMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterialInstance* OutlineMaterialInstance = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USphereComponent* InteractSphereTrigger;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USphereComponent* PickupSphereTrigger;
+	
+	
 	UFUNCTION()
 	void BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult);
 	
@@ -41,112 +50,42 @@ protected:
 	UPROPERTY()
 	AShooterPlayerCharacter* PlayerCharacter;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* PistolAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* EnergyAmmoMesh = nullptr;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* RifleAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* ShotgunAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* SniperAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* ExplosiveAmmoMesh = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Meshes")
-	UStaticMesh* FragGrenadeMesh = nullptr;
-	
-
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	UMaterialInstance* OutlineMaterial = nullptr;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicOutline = nullptr;
-
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type")
-	EPickupType PickupType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type",
-	meta = (EditCondition = "PickupType == EPickupType::Ammo", EditConditionHides))
-	EAmmoType AmmoType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type",
-	meta = (EditCondition = "PickupType == EPickupType::Weapon", EditConditionHides))
-	FDataTableRowHandle WeaponPickup;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Type",
-	meta = (EditCondition = "PickupType == EPickupType::Equipment || PickupType == EPickupType::Buff", EditConditionHides))
-	FDataTableRowHandle ItemPickup;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USphereComponent* InteractSphereTrigger;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USphereComponent* PickupSphereTrigger;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* PickupMesh = nullptr;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EPickupType GetPickupType() { return PickupType; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EAmmoType GetAmmoType() { return AmmoType; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FDataTableRowHandle GetWeaponPickup() { return WeaponPickup; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FDataTableRowHandle GetItemPickup() { return ItemPickup; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetWeaponPickupData() { return *WeaponPickup.GetRow<FWeaponData>(""); }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FItemData GetItemPickupData() { return *ItemPickup.GetRow<FItemData>(""); }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetPistolAmmoMesh() { return PistolAmmoMesh; }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetEnergyAmmoMesh() { return EnergyAmmoMesh; }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetRifleAmmoMesh() { return RifleAmmoMesh; }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetShotgunAmmoMesh() { return ShotgunAmmoMesh; }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetSniperAmmoMesh() { return SniperAmmoMesh; }
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UStaticMesh* GetExplosiveAmmoMesh() { return ExplosiveAmmoMesh; }
-
 	UFUNCTION(BlueprintCallable)
 	void SetOutlineColor(FLinearColor Color);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UMaterialInstanceDynamic* GetOutlineMaterial() { return DynamicOutline; }
-
+	
 	UFUNCTION(BlueprintCallable)
 	void RefreshPickup();
 
 	UFUNCTION(BlueprintCallable)
-	FDataTableRowHandle SetWeaponPickup(FDataTableRowHandle NewWeapon);
+	FPickupData GetPickupData() const { return *PickupDataTableRowHandle.GetRow<FPickupData>(""); }
 
 	UFUNCTION(BlueprintCallable)
-	FDataTableRowHandle SetItemPickup(FDataTableRowHandle NewItem);
+	EPickupType GetPickupType() const { return GetPickupData().PickupType; }
+
+	UFUNCTION(BlueprintCallable)
+	EConsumableEffect GetConsumableEffect()	const { return GetPickupData().ConsumableEffect; }
+
+	UFUNCTION(BlueprintCallable)
+	UStaticMesh* GetPickupMesh() const { return GetPickupData().PickupMesh; }
+
+	UFUNCTION(BlueprintCallable)
+	FColor GetOutlineColor() const { return GetPickupData().PickupOutlineColor; }
+
+	/* Returns Weapon Pickups Data Table Row Handle */
+	UFUNCTION(BlueprintCallable)
+	FDataTableRowHandle GetWeaponDataTableRowHandle() const { return GetPickupData().WeaponDataTableRowHandle; }
+
+	UFUNCTION(BlueprintCallable)
+	EAmmoType GetAmmoType() const { return GetPickupData().AmmoType; }
+
+	// UFUNCTION(BlueprintCallable)
+	// FDataTableRowHandle SetWeaponPickup(FDataTableRowHandle NewWeapon);
+	//
+	// UFUNCTION(BlueprintCallable)
+	// FDataTableRowHandle SetItemPickup(FDataTableRowHandle NewItem);
 
 };
