@@ -31,7 +31,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	bool Interact_Implementation(TSubclassOf<AActor> InteractCauser) override;
+	bool Interact_Implementation(AActor* InteractCauser) override;
 	
 	
 };

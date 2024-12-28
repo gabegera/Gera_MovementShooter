@@ -15,7 +15,7 @@ void AInteractablePickup::Tick(float DeltaTime)
 	
 }
 
-bool AInteractablePickup::Interact_Implementation(TSubclassOf<AActor> InteractCauser)
+bool AInteractablePickup::Interact_Implementation(AActor* InteractCauser)
 {
 	//GEngine->AddOnScreenDebugMessage(20, 1, FColor::Cyan, "%s interacted with with Pickup", InteractCauser);
 

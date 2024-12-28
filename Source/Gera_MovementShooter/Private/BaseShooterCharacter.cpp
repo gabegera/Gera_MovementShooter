@@ -4,6 +4,7 @@
 #include "BaseShooterCharacter.h"
 
 #include "ExplosiveComponent.h"
+#include "InteractablePickup.h"
 #include "Components/CapsuleComponent.h"
 #include "PickupObject.h"
 #include "Engine/DamageEvents.h"
@@ -60,24 +61,15 @@ FWeaponData ABaseShooterCharacter::GetEquippedWeaponData()
 
 void ABaseShooterCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->GetClass() == APickupObject::StaticClass())
+	if (OtherActor->GetClass() == AInteractablePickup::StaticClass())
 	{
-		APickupObject* OverlappedPickup = Cast<APickupObject>(OtherActor);
-
-		if (OverlappedPickup->GetPickupType() != EPickupType::Ammo &&
-			OverlappedPickup->GetPickupType() != EPickupType::Equipment)
-		{
-			PickupSet.Add(OverlappedPickup);
-		}
+		// PickupSet.Add(OtherActor);
 	}
 }
 
 void ABaseShooterCharacter::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->GetClass() == APickupObject::StaticClass())
-	{
-		PickupSet.Remove(Cast<APickupObject>(OtherActor));
-	}
+	
 }
 
 float ABaseShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

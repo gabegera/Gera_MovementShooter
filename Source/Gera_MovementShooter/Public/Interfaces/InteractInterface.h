@@ -20,5 +20,8 @@ class GERA_MOVEMENTSHOOTER_API IInteractInterface
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool Interact(TSubclassOf<AActor> InteractCauser);
+	bool CheckIsInteractable();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool Interact(AActor* InteractCauser);
 };
