@@ -15,9 +15,6 @@ class UPickupInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class GERA_MOVEMENTSHOOTER_API IPickupInterface
 {
 	GENERATED_BODY()
@@ -28,7 +25,7 @@ public:
 	bool PickupAmmo(const EAmmoType AmmoType, const int32 AmmoAmount);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool PickupWeapon(FDataTableRowHandle WeaponDataTableRowHandle);
+	bool PickupWeapon(FWeaponData NewWeapon);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool PickupEquipment(FItemData Equipment);

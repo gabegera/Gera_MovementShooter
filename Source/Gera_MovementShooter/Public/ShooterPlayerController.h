@@ -188,7 +188,7 @@ protected:
 
 	// Returns the Data of the currently equipped weapon from the WeaponData Data Table.
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetEquippedWeaponData();
+	FWeaponData GetEquippedWeapon();
 
 	// Charges the shot allowing for more damage.
 	UFUNCTION(BlueprintCallable)
@@ -241,22 +241,22 @@ public:
 	// These are Getters to make Getting Different Weapon Variables faster and cleaner.
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EAmmoType GetAmmoType() { return GetEquippedWeaponData().AmmoType; }
+	EAmmoType GetAmmoType() { return GetEquippedWeapon().AmmoType; }
 
 	UFUNCTION(Blueprintcallable, BlueprintPure)
 	int32 GetEquippedWeaponAmmo() { return GetInventory()->GetAmmo(GetAmmoType()); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
+	EWeaponType GetWeaponType() { return GetEquippedWeapon().WeaponType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeaponData().ProjectileActor;}
+	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeapon().ProjectileActor;}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
+	EProjectileType GetProjectileType() { return GetEquippedWeapon().ProjectileType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetProjectileVelocity() { return GetEquippedWeaponData().ProjectileVelocity; }
+	float GetProjectileVelocity() { return GetEquippedWeapon().ProjectileVelocity; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetMuzzleLocation() const { return GetPlayerCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
@@ -268,19 +268,19 @@ public:
 	FVector2D GetAimingRecoil();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetFireRate() { return GetEquippedWeaponData().FireRate; }
+	float GetFireRate() { return GetEquippedWeapon().FireRate; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetDamage() { return GetEquippedWeaponData().Damage; }
+	float GetDamage() { return GetEquippedWeapon().Damage; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsWeaponShotgun() { return GetEquippedWeaponData().IsShotgun; }
+	bool IsWeaponShotgun() { return GetEquippedWeapon().IsShotgun; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetPelletCount() { return GetEquippedWeaponData().PelletCount; }
+	int32 GetPelletCount() { return GetEquippedWeapon().PelletCount; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetMaxChargeTime() { return GetEquippedWeaponData().MaxChargeTime; }
+	float GetMaxChargeTime() { return GetEquippedWeapon().MaxChargeTime; }
 
 	// ------ CAMERA GETTERS ------
 	// Getters to make getting the Player's First Person Camera and it's variables faster and cleaner.

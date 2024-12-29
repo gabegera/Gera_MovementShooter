@@ -27,10 +27,7 @@ public:
 	UInventoryComponent* InventoryComponent = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
-	FDataTableRowHandle EquippedWeapon;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetEquippedWeaponData();
+	FWeaponData EquippedWeapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,7 +48,7 @@ protected:
     USkeletalMeshComponent* WeaponChildMesh = nullptr;
     
     UFUNCTION(BlueprintCallable)
-    virtual void EquipWeapon(FDataTableRowHandle NewWeapon);
+    virtual void EquipWeapon(FWeaponData NewWeapon);
     
     UPROPERTY()
     TSet<APickupObject*> PickupSet;
@@ -79,7 +76,7 @@ public:
 	bool PickupAmmo_Implementation(const EAmmoType AmmoType, const int32 AmmoAmount) override;
 
 	UFUNCTION(BlueprintCallable)
-	bool PickupWeapon_Implementation(FDataTableRowHandle WeaponDataTableRowHandle) override;
+	bool PickupWeapon_Implementation(FWeaponData WeaponDataTableRowHandle) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool PickupConsumable_Implementation(const EConsumableEffect ConsumableEffect, const int32 ConsumableAmount) override;

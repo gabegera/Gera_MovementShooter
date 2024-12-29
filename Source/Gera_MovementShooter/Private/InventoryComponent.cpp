@@ -3,8 +3,6 @@
 
 #include "InventoryComponent.h"
 
-#include "ShooterPlayerCharacter.h"
-
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
@@ -20,8 +18,13 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UInventoryComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+}
 
-void UInventoryComponent::SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon)
+
+void UInventoryComponent::SwapWeapons(EWeaponSlot WeaponSlot, FWeaponData NewWeapon)
 {
 	switch (WeaponSlot)
 	{
@@ -31,8 +34,8 @@ void UInventoryComponent::SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandl
 	case EWeaponSlot::Secondary:
 		SecondaryWeapon = NewWeapon;
 		break;
-	case EWeaponSlot::Heavy:
-		HeavyWeapon = NewWeapon;
+	case EWeaponSlot::Special:
+		SpecialWeapon = NewWeapon;
 		break;
 	}
 }

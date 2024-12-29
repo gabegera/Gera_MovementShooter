@@ -10,8 +10,11 @@ APickupObject::APickupObject()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	PickupMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pickup Mesh"));
-	PickupMesh->SetupAttachment(RootComponent);
+	PickupStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pickup Static Mesh"));
+	PickupStaticMesh->SetupAttachment(RootComponent);
+
+	PickupSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Pickup Skeletal Mesh"));
+	PickupSkeletalMesh->SetupAttachment(RootComponent);
 	
 	InteractSphereTrigger = CreateDefaultSubobject<USphereComponent>(TEXT("Weapon Trigger"));
 	InteractSphereTrigger->SetupAttachment(RootComponent);
@@ -35,20 +38,18 @@ void APickupObject::BeginPlay()
 
 void APickupObject::BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	switch (GetPickupType())
+	switch (PickupType)
 	{
 	case EPickupType::Weapon:
 		break;
 	case EPickupType::Ammo:
-		if (Execute_PickupConsumable(OtherActor, GetConsumableEffect(), GetPickupData().PickupAmount))
+		if (Execute_PickupAmmo(OtherActor, AmmoType, PickupAmount))
 		{
 			Destroy();
 		}
 		break;
-	case EPickupType::Ability:
-		break;
 	case EPickupType::Consumable:
-		if (Execute_PickupAmmo(OtherActor, GetAmmoType(), GetPickupData().PickupAmount))
+		if (Execute_PickupConsumable(OtherActor, GetConsumableEffect(), PickupAmount))
 		{
 			Destroy();
 		}
@@ -78,7 +79,7 @@ void APickupObject::SetOutlineColor(FLinearColor Color)
 	UMaterialInstanceDynamic* DynamicOutline = UMaterialInstanceDynamic::Create(OutlineMaterialInstance, this);
 	
 	DynamicOutline->SetVectorParameterValue(FName("Color"), Color);
-	PickupMesh->SetOverlayMaterial(DynamicOutline);
+	PickupStaticMesh->SetOverlayMaterial(DynamicOutline);
 }
 
 void APickupObject::RefreshPickup()
@@ -86,19 +87,19 @@ void APickupObject::RefreshPickup()
 	if (PickupDataTableRowHandle.IsNull() || PickupDataTableRowHandle.GetRow<FPickupData>("") == nullptr) return;
 	
 	SetOutlineColor(GetOutlineColor());
-	if (GetPickupMesh()) PickupMesh->SetStaticMesh(GetPickupMesh());
-	PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	if (GetPickupMesh()) PickupStaticMesh->SetStaticMesh(GetPickupMesh());
+	PickupStaticMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	
 	if (GetPickupType() == EPickupType::Ammo)
 	{
 		switch (GetAmmoType())
 		{
 		case EAmmoType::RifleAmmo:
-			PickupMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
+			PickupStaticMesh->SetRelativeRotation(FRotator(35.0f, 35.0f, 15.0f));
 			break;
 			
 		case EAmmoType::ShotgunAmmo:
-			PickupMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
+			PickupStaticMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 			break;
 		default:
 			break;
@@ -108,9 +109,9 @@ void APickupObject::RefreshPickup()
 	{
 		if (!GetWeaponDataTableRowHandle().IsNull() && GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->StaticMesh)
 		{
-			PickupMesh->SetStaticMesh(GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->StaticMesh);
+			PickupStaticMesh->SetStaticMesh(GetWeaponDataTableRowHandle().GetRow<FWeaponData>("")->StaticMesh);
 		}
-		PickupMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+		PickupStaticMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 		//InteractSphereTrigger->SetSphereRadius(PickupMesh->Bounds.GetSphere().W * 2);
 	}
 }

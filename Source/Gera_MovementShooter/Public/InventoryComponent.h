@@ -22,11 +22,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly)
-	UDataTable* WeaponsDataTable = nullptr;
-
-	UPROPERTY(EditDefaultsOnly)
-	FDataTableRowHandle EmptyHands;
+	virtual void PostInitProperties() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
@@ -39,17 +35,23 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
+	FDataTableRowHandle StartingPrimaryWeapon;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FDataTableRowHandle PrimaryWeapon;
+	FWeaponData PrimaryWeapon;
 
+	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
+	FDataTableRowHandle StartingSecondaryWeapon;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FDataTableRowHandle SecondaryWeapon;
+	FWeaponData SecondaryWeapon;
 
+	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
+	FDataTableRowHandle StartingSpecialWeapon;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FDataTableRowHandle HeavyWeapon;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FDataTableRowHandle GetEmptyHands() { return EmptyHands; }
+	FWeaponData SpecialWeapon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle EquipmentSlot;
@@ -82,7 +84,7 @@ public:
 	void RemoveEquipment(FName EquipmentName, int EquipmentAmount);
 
 	UFUNCTION(BlueprintCallable)
-	void SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon);
+	void SwapWeapons(EWeaponSlot WeaponSlot, FWeaponData NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void SwapEquipment(FDataTableRowHandle NewEquipment);

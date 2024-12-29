@@ -138,12 +138,12 @@ void ABaseEnemyAIController::Shoot(FVector TargetLocation)
 
 float ABaseEnemyAIController::GetShotSpreadInDegrees()
 {
-	return GetEquippedWeaponData().SpreadInDegrees;
+	return GetEquippedWeapon().HipfireSpreadInDegrees;
 }
 
-FWeaponData ABaseEnemyAIController::GetEquippedWeaponData()
+FWeaponData ABaseEnemyAIController::GetEquippedWeapon()
 {
-	return GetEnemyCharacter()->GetEquippedWeaponData();
+	return EnemyCharacter->EquippedWeapon;
 }
 
 void ABaseEnemyAIController::Tick(float DeltaTime)

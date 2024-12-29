@@ -8,8 +8,17 @@
 #include "GameFramework/Actor.h"
 #include "Interfaces/PickupInterface.h"
 #include "Components/SphereComponent.h"
-#include "DataTables/PickupData.h"
+#include "DataTables/ConsumableData.h"
 #include "PickupObject.generated.h"
+
+UENUM(BlueprintType)
+enum class EPickupType : uint8
+{
+	Ammo = 0 UMETA(DisplayName = "Ammo"),
+	Consumable = 1 UMETA(DisplayName = "Consumable"),
+	Equipment = 2 UMETA(DisplayName = "Equipment"),
+	Weapon = 3 UMETA(DisplayName = "Weapon")
+};
 
 class AShooterPlayerCharacter;
 
@@ -27,10 +36,28 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FDataTableRowHandle PickupDataTableRowHandle;
+	EPickupType PickupType = EPickupType::Ammo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "PickupType == EPickupType::Ammo", EditConditionHides))
+	EAmmoType AmmoType = EAmmoType::EnergyAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Consumable", EditConditionHides, RowType="ConsumableData"))
+	FDataTableRowHandle ConsumableDataTableRowHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Equipment", EditConditionHides, RowType="EquipmentData"))
+	FDataTableRowHandle EquipmentDataTableRowHandle;	
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Weapon", EditConditionHides, RowType="WeaponData"))
+	FDataTableRowHandle WeaponDataTableRowHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 PickupAmount = 20;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* PickupStaticMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* PickupMesh = nullptr;
+	USkeletalMeshComponent* PickupSkeletalMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInstance* OutlineMaterialInstance = nullptr;
@@ -60,27 +87,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RefreshPickup();
 
-	UFUNCTION(BlueprintCallable)
-	FPickupData GetPickupData() const { return *PickupDataTableRowHandle.GetRow<FPickupData>(""); }
-
-	UFUNCTION(BlueprintCallable)
-	EPickupType GetPickupType() const { return GetPickupData().PickupType; }
-
-	UFUNCTION(BlueprintCallable)
-	EConsumableEffect GetConsumableEffect()	const { return GetPickupData().ConsumableEffect; }
-
-	UFUNCTION(BlueprintCallable)
-	UStaticMesh* GetPickupMesh() const { return GetPickupData().PickupMesh; }
-
-	UFUNCTION(BlueprintCallable)
-	FColor GetOutlineColor() const { return GetPickupData().PickupOutlineColor; }
-
-	/* Returns Weapon Pickups Data Table Row Handle */
-	UFUNCTION(BlueprintCallable)
-	FDataTableRowHandle GetWeaponDataTableRowHandle() const { return GetPickupData().WeaponDataTableRowHandle; }
-
-	UFUNCTION(BlueprintCallable)
-	EAmmoType GetAmmoType() const { return GetPickupData().AmmoType; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EConsumableEffect GetConsumableEffect() const { return ConsumableDataTableRowHandle.GetRow<FConsumableData>("")->ConsumableEffect; }
 
 	// UFUNCTION(BlueprintCallable)
 	// FDataTableRowHandle SetWeaponPickup(FDataTableRowHandle NewWeapon);

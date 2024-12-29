@@ -59,27 +59,6 @@ void AShooterPlayerCharacter::BeginPlay()
 	{
 		WeaponChildMesh = WeaponChildComponent->GetChildActor()->GetComponentByClass<USkeletalMeshComponent>();
 	}
-
-	if (IsValid(InventoryComponent))
-	{
-		if (InventoryComponent->PrimaryWeapon.IsNull() && InventoryComponent->SecondaryWeapon.IsNull() && InventoryComponent->HeavyWeapon.IsNull())
-		{
-			EquipWeapon(InventoryComponent->GetEmptyHands());
-		}
-		else if (!InventoryComponent->PrimaryWeapon.IsNull())
-		{
-			EquipWeapon(InventoryComponent->PrimaryWeapon);			
-		}
-		else if (!InventoryComponent->SecondaryWeapon.IsNull())
-		{
-			EquipWeapon(InventoryComponent->SecondaryWeapon);		
-		}
-		else if (!InventoryComponent->HeavyWeapon.IsNull())
-		{
-			EquipWeapon(InventoryComponent->HeavyWeapon);		
-		}
-
-	}
 }
 
 // Called every frame

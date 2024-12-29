@@ -78,7 +78,7 @@ void AShooterPlayerController::Move(float InputX, float InputY)
 
 void AShooterPlayerController::AddLookInput(FVector2D Input)
 {
-	if (IsAiming()) Input *= MouseSensitivity / GetEquippedWeaponData().ZoomMultiplier;
+	if (IsAiming()) Input *= MouseSensitivity / GetEquippedWeapon().ZoomMultiplier;
 	else Input *= MouseSensitivity;
 
 	if (RecoilCache != FVector2D::ZeroVector)
@@ -132,9 +132,9 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
-FWeaponData AShooterPlayerController::GetEquippedWeaponData()
+FWeaponData AShooterPlayerController::GetEquippedWeapon()
 {
-	return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("");
+	return PlayerCharacter->EquippedWeapon;
 }
 
 void AShooterPlayerController::ChargeShot(float MaxCharge)
@@ -214,12 +214,12 @@ void AShooterPlayerController::Shoot()
 
 float AShooterPlayerController::GetShotSpreadInDegrees()
 {
-	if (float Spread = GetEquippedWeaponData().SpreadInDegrees)
+	if (float Spread = GetEquippedWeapon().HipfireSpreadInDegrees)
 	{
 		if (IsAiming())
 		{
-			if (GetEquippedWeaponData().AimingSpreadOverride) Spread = GetEquippedWeaponData().AimingSpreadInDegrees;
-			else Spread /= GetEquippedWeaponData().ZoomMultiplier;
+			if (GetEquippedWeapon().AimingSpreadOverride) Spread = GetEquippedWeapon().AimingSpreadInDegrees;
+			else Spread /= GetEquippedWeapon().ZoomMultiplier;
 		}
 		
 		return Spread;
@@ -391,16 +391,16 @@ void AShooterPlayerController::UseBuffItem()
 
 FVector2D AShooterPlayerController::GetHipfireRecoil()
 {
-	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().HipfireRecoilMinX, GetEquippedWeaponData().HipfireRecoilMaxX);
-	const float RecoilY = GetEquippedWeaponData().HipfireRecoilY;
+	const float RecoilX = FMath::RandRange(GetEquippedWeapon().HipfireRecoilMinX, GetEquippedWeapon().HipfireRecoilMaxX);
+	const float RecoilY = GetEquippedWeapon().HipfireRecoilY;
 
 	return FVector2D(RecoilX, RecoilY);
 }
 
 FVector2D AShooterPlayerController::GetAimingRecoil()
 {
-	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().AimingRecoilMinX, GetEquippedWeaponData().AimingRecoilMaxX);
-	const float RecoilY = GetEquippedWeaponData().AimingRecoilY;
+	const float RecoilX = FMath::RandRange(GetEquippedWeapon().AimingRecoilMinX, GetEquippedWeapon().AimingRecoilMaxX);
+	const float RecoilY = GetEquippedWeapon().AimingRecoilY;
 
 	return FVector2D(RecoilX, RecoilY);
 }
@@ -424,6 +424,6 @@ void AShooterPlayerController::Tick(float DeltaTime)
 
 	// ------ FIRE RATE ------
 
-	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeaponData().FireRate * (GetEquippedWeaponData().FireRate / 60);
+	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeapon().FireRate * (GetEquippedWeapon().FireRate / 60);
 
 }

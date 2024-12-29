@@ -4,7 +4,6 @@
 #include "BaseShooterCharacter.h"
 
 #include "ExplosiveComponent.h"
-#include "InteractablePickup.h"
 #include "Components/CapsuleComponent.h"
 #include "PickupObject.h"
 #include "Engine/DamageEvents.h"
@@ -27,44 +26,36 @@ void ABaseShooterCharacter::BeginPlay()
 	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &ABaseShooterCharacter::BeginOverlap);
 	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &ABaseShooterCharacter::EndOverlap);
 
-	//if (!InventoryComponent->PrimaryWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
+	if (InventoryComponent->PrimaryWeapon.IsNull() == false) EquipWeapon(InventoryComponent->PrimaryWeapon);
+	else if (InventoryComponent->SecondaryWeapon.IsNull() == false) EquipWeapon(InventoryComponent->SecondaryWeapon);
+	else if (InventoryComponent->SpecialWeapon.IsNull() == false) EquipWeapon(InventoryComponent->SpecialWeapon);
 }
 
 void ABaseShooterCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	EquipWeapon(InventoryComponent->PrimaryWeapon);
-
-	// if (InventoryComponent->PrimaryWeapon.IsNull()) {
-	// 	EquipWeapon(InventoryComponent->PrimaryWeapon);
-	// }
-	// else if (InventoryComponent->SecondaryWeapon.IsNull()) {
-	// 	EquipWeapon(InventoryComponent->SecondaryWeapon);
-	// }
-	// else if (InventoryComponent->HeavyWeapon.IsNull()){
-	// 	EquipWeapon(InventoryComponent->HeavyWeapon);
-	// }
-	// else
-	// {
-	// 	WeaponChildComponent->DestroyChildActor();
-	// }
+	if (InventoryComponent->StartingPrimaryWeapon.IsNull() == false)
+	{
+		InventoryComponent->PrimaryWeapon = *InventoryComponent->StartingPrimaryWeapon.GetRow<FWeaponData>("");
+		EquipWeapon(InventoryComponent->PrimaryWeapon);
+	}
+	else if (InventoryComponent->StartingSecondaryWeapon.IsNull() == false)
+	{
+		InventoryComponent->SecondaryWeapon = *InventoryComponent->StartingSecondaryWeapon.GetRow<FWeaponData>("");
+		EquipWeapon(InventoryComponent->SecondaryWeapon);
+	}
+	else if (InventoryComponent->StartingSpecialWeapon.IsNull() == false)
+	{
+		InventoryComponent->SpecialWeapon = *InventoryComponent->StartingSpecialWeapon.GetRow<FWeaponData>("");
+		EquipWeapon(InventoryComponent->SpecialWeapon);
+	}
 	
-}
-
-FWeaponData ABaseShooterCharacter::GetEquippedWeaponData()
-{
-	if (EquippedWeapon.IsNull()) EquipWeapon(InventoryComponent->PrimaryWeapon);
-	
-	return *EquippedWeapon.GetRow<FWeaponData>("");
 }
 
 void ABaseShooterCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->GetClass() == AInteractablePickup::StaticClass())
-	{
-		// PickupSet.Add(OtherActor);
-	}
+	
 }
 
 void ABaseShooterCharacter::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -170,17 +161,14 @@ APickupObject* ABaseShooterCharacter::FindClosestPickup()
 // 	}
 // }
 
-void ABaseShooterCharacter::EquipWeapon(FDataTableRowHandle NewWeapon)
+void ABaseShooterCharacter::EquipWeapon(FWeaponData NewWeapon)
 {
 	if (EquippedWeapon == NewWeapon) return;
 	if (NewWeapon.IsNull()) return;
 	
 	EquippedWeapon = NewWeapon;
-
-	if (auto EquippedWeaponData = EquippedWeapon.GetRow<FWeaponData>(""))
-    	{
-    		WeaponChildComponent->SetChildActorClass(EquippedWeaponData->WeaponActor);
-    	}
+	
+	WeaponChildComponent->SetChildActorClass(EquippedWeapon.WeaponActor);
 }
 
 void ABaseShooterCharacter::ShootHitscan(float WeaponSpreadInDegrees, const FVector ShotOrigin, FVector ShotTarget, float Damage)
@@ -235,11 +223,9 @@ bool ABaseShooterCharacter::PickupAmmo_Implementation(const EAmmoType AmmoType, 
 	return true;
 }
 
-bool ABaseShooterCharacter::PickupWeapon_Implementation(FDataTableRowHandle WeaponDataTableRowHandle)
+bool ABaseShooterCharacter::PickupWeapon_Implementation(FWeaponData NewWeapon)
 {
-	FWeaponData* WeaponData = WeaponDataTableRowHandle.GetRow<FWeaponData>("");
-
-	InventoryComponent->SwapWeapons(WeaponData->WeaponSlot, WeaponDataTableRowHandle);
+	InventoryComponent->SwapWeapons(NewWeapon.WeaponSlot, NewWeapon);
 	
 	return true;
 }
@@ -248,8 +234,14 @@ bool ABaseShooterCharacter::PickupConsumable_Implementation(const EConsumableEff
 {
 	switch (ConsumableEffect)
 	{
-	case EConsumableEffect::Healing:
+	case EConsumableEffect::Health:
 		HealthComponent->AddHealth(ConsumableAmount);
+		break;
+	case EConsumableEffect::Armor:
+		break;
+	case EConsumableEffect::DamageBoost:
+		break;
+	case EConsumableEffect::SpeedBoost:
 		break;
 	}
 	
