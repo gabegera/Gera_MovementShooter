@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemData.h"
 #include "DataTables/WeaponData.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/PickupInterface.h"
 #include "Components/SphereComponent.h"
+#include "DataTables/AmmoData.h"
 #include "DataTables/ConsumableData.h"
+#include "DataTables/EquipmentData.h"
 #include "PickupObject.generated.h"
 
 UENUM(BlueprintType)
@@ -38,8 +39,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EPickupType PickupType = EPickupType::Ammo;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "PickupType == EPickupType::Ammo", EditConditionHides))
-	EAmmoType AmmoType = EAmmoType::EnergyAmmo;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Ammo", EditConditionHides, RowType="AmmoData"))
+	FDataTableRowHandle AmmoDataTableRowHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Consumable", EditConditionHides, RowType="ConsumableData"))
 	FDataTableRowHandle ConsumableDataTableRowHandle;
@@ -49,9 +50,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Weapon", EditConditionHides, RowType="WeaponData"))
 	FDataTableRowHandle WeaponDataTableRowHandle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 PickupAmount = 20;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* PickupStaticMesh = nullptr;
@@ -90,10 +88,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EConsumableEffect GetConsumableEffect() const { return ConsumableDataTableRowHandle.GetRow<FConsumableData>("")->ConsumableEffect; }
 
-	// UFUNCTION(BlueprintCallable)
-	// FDataTableRowHandle SetWeaponPickup(FDataTableRowHandle NewWeapon);
-	//
-	// UFUNCTION(BlueprintCallable)
-	// FDataTableRowHandle SetItemPickup(FDataTableRowHandle NewItem);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FAmmoData GetAmmoData() const { return *AmmoDataTableRowHandle.GetRow<FAmmoData>(""); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FConsumableData GetConsumableData() const { return *ConsumableDataTableRowHandle.GetRow<FConsumableData>(""); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FEquipmentData GetEquipmentData() const { return *EquipmentDataTableRowHandle.GetRow<FEquipmentData>(""); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FWeaponData GetWeaponData() const { return *WeaponDataTableRowHandle.GetRow<FWeaponData>(""); }
 
 };

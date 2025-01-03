@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "DataTables/EquipmentData.h"
 #include "PickupInterface.generated.h"
-
-struct FPickupData;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -28,11 +27,8 @@ public:
 	bool PickupWeapon(FWeaponData NewWeapon);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool PickupEquipment(FItemData Equipment);
+	bool PickupEquipment(FEquipmentData Equipment);
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool PickupBuff(FItemData Buff);
-
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool PickupConsumable(const EConsumableEffect ConsumableEffect, const int32 ConsumableAmount);
 };

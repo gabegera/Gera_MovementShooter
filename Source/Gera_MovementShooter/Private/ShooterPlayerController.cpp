@@ -322,71 +322,71 @@ void AShooterPlayerController::ResetWeapon()
 
 void AShooterPlayerController::UseThrowableItem()
 {
-	FItemData* ThrowableData = PlayerInventoryComp->EquipmentSlot.GetRow<FItemData>("");
-
-	int EquipmentCount = PlayerInventoryComp->GetEquipment(ThrowableData->Name);
-
-	if (EquipmentCount <= 0) return;
-
-	const TSubclassOf<AActor> ThrowableActor = ThrowableData->ItemActor;
-	AThrowableActor* SpawnedThrowable = Cast<AThrowableActor>(GetWorld()->SpawnActor(ThrowableActor));
-	//AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor);
-
-	if (!SpawnedThrowable) return;
-
-	SpawnedThrowable->SetActorLocation(PlayerCameraManager->GetTransform().GetLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
-	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
-	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(ThrowableVelocity * PlayerCameraManager->GetCameraRotation().Vector(), "None", true);
-
-	UExplosiveComponent* ExplosiveComponent = SpawnedThrowable->GetComponentByClass<UExplosiveComponent>();
-	if (ExplosiveComponent)
-	{
-		if (IsDamageBoostActive)
-		{
-			ExplosiveComponent->SetDamage(ThrowableData->Damage *= DamageBoostMultiplier);
-		}
-		else ExplosiveComponent->SetDamage(ThrowableData->Damage);
-		ExplosiveComponent->SetBlastRadius(ThrowableData->BlastRadius);
-		ExplosiveComponent->SetFuseTime(ThrowableData->FuseTime);
-	}
-
-	PlayerInventoryComp->RemoveEquipment(ThrowableData->Name, 1);
+	// FEquipmentData ThrowableData = *PlayerInventoryComp->EquipmentSlot.GetRow<FEquipmentData>("");
+	//
+	// int EquipmentCount = PlayerInventoryComp->GetEquipment(ThrowableData.EquipmentName);
+	//
+	// if (EquipmentCount <= 0) return;
+	//
+	// const AActor* ThrowableActor = ThrowableData.EquipmentActor;
+	// AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor->GetClass());
+	// //AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor);
+	//
+	// if (!SpawnedThrowable) return;
+	//
+	// SpawnedThrowable->SetActorLocation(PlayerCameraManager->GetTransform().GetLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
+	// SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
+	// SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(ThrowableVelocity * PlayerCameraManager->GetCameraRotation().Vector(), "None", true);
+	//
+	// UExplosiveComponent* ExplosiveComponent = SpawnedThrowable->GetComponentByClass<UExplosiveComponent>();
+	// if (ExplosiveComponent)
+	// {
+	// 	if (IsDamageBoostActive)
+	// 	{
+	// 		ExplosiveComponent->SetDamage(ThrowableData.Damage *= DamageBoostMultiplier);
+	// 	}
+	// 	else ExplosiveComponent->SetDamage(ThrowableData.Damage);
+	// 	ExplosiveComponent->SetBlastRadius(ThrowableData.BlastRadius);
+	// 	ExplosiveComponent->SetFuseTime(ThrowableData.FuseTime);
+	// }
+	//
+	// PlayerInventoryComp->RemoveEquipment(ThrowableData.EquipmentName, 1);
 }
 
 void AShooterPlayerController::UseBuffItem()
 {
-	if (PlayerInventoryComp->SupportItemSlot.IsNull()) return;
-
-	float TimerLength = PlayerInventoryComp->GetEquippedSupportData().BuffDuration;
-	EBuffEffects CurrentBuffEffect = PlayerInventoryComp->GetEquippedSupportData().BuffEffect;
-	switch (CurrentBuffEffect)
-	{
-	case EBuffEffects::None:
-		break;
-	case EBuffEffects::Heal:
-		PlayerHealthComp->AddHealth(PlayerInventoryComp->GetEquippedSupportData().HealAmount);
-		break;
-	case EBuffEffects::SpeedBoost:
-		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-		UseSpeedBoost();
-		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSpeedBoost, TimerLength, false);
-		break;
-	case EBuffEffects::DamageBoost:
-		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-		UseDamageBoost();
-		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopDamageBoost, TimerLength, false);
-		break;
-	case EBuffEffects::SlowTime:
-		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-		UseSlowTime();
-		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSlowTime, TimerLength / SlowTimeDivision, false);
-		break;
-	default:
-		break;
-	}
-
-	FDataTableRowHandle Empty;
-	PlayerInventoryComp->SupportItemSlot = Empty;
+	// if (PlayerInventoryComp->SupportItemSlot.IsNull()) return;
+	//
+	// float TimerLength = PlayerInventoryComp->GetEquippedSupportData().BuffDuration;
+	// EBuffEffects CurrentBuffEffect = PlayerInventoryComp->GetEquippedSupportData().BuffEffect;
+	// switch (CurrentBuffEffect)
+	// {
+	// case EBuffEffects::None:
+	// 	break;
+	// case EBuffEffects::Heal:
+	// 	PlayerHealthComp->AddHealth(PlayerInventoryComp->GetEquippedSupportData().HealAmount);
+	// 	break;
+	// case EBuffEffects::SpeedBoost:
+	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+	// 	UseSpeedBoost();
+	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSpeedBoost, TimerLength, false);
+	// 	break;
+	// case EBuffEffects::DamageBoost:
+	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+	// 	UseDamageBoost();
+	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopDamageBoost, TimerLength, false);
+	// 	break;
+	// case EBuffEffects::SlowTime:
+	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+	// 	UseSlowTime();
+	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSlowTime, TimerLength / SlowTimeDivision, false);
+	// 	break;
+	// default:
+	// 	break;
+	// }
+	//
+	// FDataTableRowHandle Empty;
+	// PlayerInventoryComp->SupportItemSlot = Empty;
 }
 
 FVector2D AShooterPlayerController::GetHipfireRecoil()

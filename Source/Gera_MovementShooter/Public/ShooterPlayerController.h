@@ -8,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "PickupObject.h"
 #include "DataTables/WeaponData.h"
-#include "ItemData.h"
 #include "HealthComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"

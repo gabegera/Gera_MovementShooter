@@ -17,9 +17,33 @@ struct GERA_MOVEMENTSHOOTER_API FConsumableData: public FTableRowBase
 {
 	GENERATED_BODY()
 
+	bool operator==(const FWeaponData &Other) const
+	{
+		if (ConsumableName == Other.Name) return true;
+		return false;
+	}
+
+	bool IsNull() const
+	{
+		if (ConsumableName.IsNone())
+		{
+			return true;
+		}
+		return false;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ConsumableName = NAME_None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMesh* ConsumableMesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FColor PickupOutlineColor = FColor::Black;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable")
 	EConsumableEffect ConsumableEffect = EConsumableEffect::Health;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable")
-	float ConsumableAmount = 20.0f;
+	float PickupAmount = 20.0f;
 };

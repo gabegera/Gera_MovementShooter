@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "DataTables/WeaponData.h"
-#include "ItemData.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
@@ -56,14 +55,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle EquipmentSlot;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FItemData GetEquippedEquipmentData() { return *EquipmentSlot.GetRow<FItemData>(""); }
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle SupportItemSlot;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FItemData GetEquippedSupportData() { return *SupportItemSlot.GetRow<FItemData>(""); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetAmmo(EAmmoType AmmoType);

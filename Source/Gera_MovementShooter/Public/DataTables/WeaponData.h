@@ -74,7 +74,7 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 
 	// Color of the outline on the pickup.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Pickup Settings")
-	FColor OutlineColor = FColor::White;
+	FColor PickupOutlineColor = FColor::White;
 
 	// Hitscan will use a Line Trace to immediately hit its target. Projectile is physical object with travel time.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
