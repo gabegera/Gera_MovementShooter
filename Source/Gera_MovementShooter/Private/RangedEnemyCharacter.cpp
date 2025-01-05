@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RangedEnemyCharacter.h"
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 
 void ARangedEnemyCharacter::BeginPlay()
 {

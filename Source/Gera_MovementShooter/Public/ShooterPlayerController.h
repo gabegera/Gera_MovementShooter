@@ -6,7 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ShooterPlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 #include "DataTables/WeaponData.h"
 #include "HealthComponent.h"
 #include "Components/TimelineComponent.h"

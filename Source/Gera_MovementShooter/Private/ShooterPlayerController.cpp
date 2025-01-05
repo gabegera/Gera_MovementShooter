@@ -321,7 +321,7 @@ void AShooterPlayerController::ResetWeapon()
 }
 
 void AShooterPlayerController::UseThrowableItem()
-{
+{	
 	// FEquipmentData ThrowableData = *PlayerInventoryComp->EquipmentSlot.GetRow<FEquipmentData>("");
 	//
 	// int EquipmentCount = PlayerInventoryComp->GetEquipment(ThrowableData.EquipmentName);

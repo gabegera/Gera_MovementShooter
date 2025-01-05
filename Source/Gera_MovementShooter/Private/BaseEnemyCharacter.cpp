@@ -4,7 +4,7 @@
 #include "BaseEnemyCharacter.h"
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 #include "Perception/AIPerceptionComponent.h"
 
 // Sets default values

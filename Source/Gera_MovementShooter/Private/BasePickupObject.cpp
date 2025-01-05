@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 #include "ShooterPlayerCharacter.h"
 #include "DataTables/AmmoData.h"
 
@@ -39,34 +39,33 @@ void APickupObject::BeginPlay()
 
 void APickupObject::BeginPickupSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	switch (PickupType)
-	{
-	
-	case EPickupType::Ammo:
-		if (Execute_PickupAmmo(OtherActor, GetAmmoData().AmmoType, GetAmmoData().PickupAmount))
-		{
-			Destroy();
-		}
-		break;
-	case EPickupType::Consumable:
-		if (Execute_PickupConsumable(OtherActor, GetConsumableEffect(), GetConsumableData().PickupAmount))
-		{
-			Destroy();
-		}
-		break;
-	case EPickupType::Equipment:
-		if (Execute_PickupEquipment(OtherActor, GetEquipmentData()))
-		{
-			Destroy();
-		}
-		break;
-	case EPickupType::Weapon:
-		if (Execute_PickupWeapon(OtherActor, GetWeaponData()))
-		{
-			Destroy();
-		}
-		break;	
-	}
+	// switch (PickupType)
+	// {
+	// case EPickupType::Ammo:
+	// 	if (Execute_PickupAmmo(OtherActor, AmmoData.AmmoType, AmmoData.PickupAmount))
+	// 	{
+	// 		Destroy();
+	// 	}
+	// 	break;
+	// case EPickupType::Consumable:
+	// 	if (Execute_PickupConsumable(OtherActor, ConsumableData.ConsumableEffect, ConsumableData.PickupAmount))
+	// 	{
+	// 		Destroy();
+	// 	}
+	// 	break;
+	// case EPickupType::Equipment:
+	// 	if (Execute_PickupEquipment(OtherActor, EquipmentData))
+	// 	{
+	// 		Destroy();
+	// 	}
+	// 	break;
+	// case EPickupType::Weapon:
+	// 	if (Execute_PickupWeapon(OtherActor, WeaponData))
+	// 	{
+	// 		Destroy();
+	// 	}
+	// 	break;	
+	// }
 }
 
 void APickupObject::OnConstruction(const FTransform& Transform)
@@ -94,36 +93,39 @@ void APickupObject::SetOutlineColor(FLinearColor Color)
 
 void APickupObject::RefreshPickup()
 {
-	UStaticMesh* PickupMesh = nullptr;
-	FColor PickupOutlineColor = FColor::Black;
-	
-	switch (PickupType)
-	{
-	case EPickupType::Ammo:
-		if (AmmoDataTableRowHandle.IsNull()) return;
-		PickupMesh = GetAmmoData().AmmoMesh;
-		PickupOutlineColor = GetAmmoData().PickupOutlineColor;
-		break;
-	case EPickupType::Consumable:
-		if (ConsumableDataTableRowHandle.IsNull()) return;
-		PickupMesh = GetConsumableData().ConsumableMesh;
-		PickupOutlineColor = GetConsumableData().PickupOutlineColor;
-		break;
-	case EPickupType::Equipment:
-		if (EquipmentDataTableRowHandle.IsNull()) return;
-		PickupMesh = GetEquipmentData().EquipmentMesh;
-		PickupOutlineColor = GetEquipmentData().PickupOutlineColor;
-		break;
-	case EPickupType::Weapon:
-		if (WeaponDataTableRowHandle.IsNull()) return;
-		PickupMesh = GetWeaponData().StaticMesh;
-		PickupOutlineColor = GetWeaponData().PickupOutlineColor;
-		break;
-	}
-	
-	SetOutlineColor(PickupOutlineColor);
-	PickupStaticMesh->SetStaticMesh(PickupMesh);
-	PickupStaticMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	// UStaticMesh* PickupMesh = nullptr;
+	// FColor PickupOutlineColor = FColor::Black;
+	//
+	// switch (PickupType)
+	// {
+	// case EPickupType::Ammo:
+	// 	if (AmmoDataTableRowHandle.IsNull() || AmmoDataTableRowHandle.RowName == NAME_None) return;
+	// 	if (GetAmmoPickupMesh()) PickupMesh = GetAmmoPickupMesh();
+	// 	PickupOutlineColor = GetAmmoOutlineColor();
+	// 	break;
+	// case EPickupType::Consumable:
+	// 	if (ConsumableDataTableRowHandle.IsNull() || ConsumableDataTableRowHandle.RowName == NAME_None) return;
+	// 	if (GetConsumableMesh()) PickupMesh = GetConsumableMesh();
+	// 	PickupOutlineColor = GetConsumableOutlineColor();
+	// 	break;
+	// case EPickupType::Equipment:
+	// 	if (EquipmentDataTableRowHandle.IsNull() || EquipmentDataTableRowHandle.RowName == NAME_None) return;
+	// 	if (GetEquipmentMesh()) PickupMesh = GetEquipmentMesh();
+	// 	PickupOutlineColor = GetEquipmentOutlineColor();
+	// 	break;
+	// case EPickupType::Weapon:
+	// 	if (WeaponDataTableRowHandle.IsNull() || WeaponDataTableRowHandle.RowName == NAME_None) return;
+	// 	if (GetWeaponMesh()) PickupMesh = GetWeaponMesh();
+	// 	PickupOutlineColor = GetWeaponOutlineColor();
+	// 	break;
+	// }
+	//
+	// SetOutlineColor(PickupOutlineColor);
+	// if (PickupMesh)
+	// {
+	// 	PickupStaticMesh->SetStaticMesh(PickupMesh);
+	// 	PickupStaticMesh->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	// }
 }
 
 // FDataTableRowHandle APickupObject::SetWeaponPickup(FDataTableRowHandle NewWeapon)

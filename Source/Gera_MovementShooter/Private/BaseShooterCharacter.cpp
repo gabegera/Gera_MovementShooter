@@ -5,7 +5,7 @@
 
 #include "ExplosiveComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"

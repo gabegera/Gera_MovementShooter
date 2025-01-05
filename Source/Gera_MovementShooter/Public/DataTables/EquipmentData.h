@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "EquipmentData.generated.h"
 
+class AThrowableActor;
+
 USTRUCT(BlueprintType)
 struct GERA_MOVEMENTSHOOTER_API FEquipmentData: public FTableRowBase
 {
@@ -30,7 +32,7 @@ struct GERA_MOVEMENTSHOOTER_API FEquipmentData: public FTableRowBase
 	UStaticMesh* EquipmentMesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* EquipmentActor = nullptr;
+	TSoftClassPtr<AThrowableActor> EquipmentActor = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FColor PickupOutlineColor = FColor::Black;

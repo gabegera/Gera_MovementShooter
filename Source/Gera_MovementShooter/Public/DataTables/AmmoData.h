@@ -17,7 +17,7 @@ struct GERA_MOVEMENTSHOOTER_API FAmmoData: public FTableRowBase
 
 	bool IsNull() const
 	{
-		if (AmmoName.IsNone())
+		if (AmmoName.IsNone() && !AmmoMesh)
 		{
 			return true;
 		}

@@ -3,7 +3,7 @@
 
 #include "ShooterPlayerCharacter.h"
 
-#include "PickupObject.h"
+#include "BasePickupObject.h"
 #include "ShooterPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "VectorUtil.h"

@@ -10,7 +10,7 @@
 #include "DataTables/AmmoData.h"
 #include "DataTables/ConsumableData.h"
 #include "DataTables/EquipmentData.h"
-#include "PickupObject.generated.h"
+#include "BasePickupObject.generated.h"
 
 UENUM(BlueprintType)
 enum class EPickupType : uint8
@@ -42,14 +42,26 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Ammo", EditConditionHides, RowType="AmmoData"))
 	FDataTableRowHandle AmmoDataTableRowHandle;
 
+	UPROPERTY(BlueprintReadOnly)
+	FAmmoData AmmoData;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Consumable", EditConditionHides, RowType="ConsumableData"))
 	FDataTableRowHandle ConsumableDataTableRowHandle;
 
+	UPROPERTY(BlueprintReadOnly)
+	FConsumableData ConsumableData;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Equipment", EditConditionHides, RowType="EquipmentData"))
-	FDataTableRowHandle EquipmentDataTableRowHandle;	
+	FDataTableRowHandle EquipmentDataTableRowHandle;
+
+	UPROPERTY(BlueprintReadOnly)
+	FEquipmentData EquipmentData;	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition="PickupType == EPickupType::Weapon", EditConditionHides, RowType="WeaponData"))
 	FDataTableRowHandle WeaponDataTableRowHandle;
+
+	UPROPERTY(BlueprintReadOnly)
+	FWeaponData WeaponData;	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* PickupStaticMesh = nullptr;
@@ -86,18 +98,27 @@ public:
 	void RefreshPickup();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EConsumableEffect GetConsumableEffect() const { return ConsumableDataTableRowHandle.GetRow<FConsumableData>("")->ConsumableEffect; }
+	UStaticMesh* GetAmmoPickupMesh() const { return AmmoDataTableRowHandle.GetRow<FAmmoData>("")->AmmoMesh; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FAmmoData GetAmmoData() const { return *AmmoDataTableRowHandle.GetRow<FAmmoData>(""); }
+	FColor GetAmmoOutlineColor() const { return AmmoDataTableRowHandle.GetRow<FAmmoData>("")->PickupOutlineColor; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FConsumableData GetConsumableData() const { return *ConsumableDataTableRowHandle.GetRow<FConsumableData>(""); }
+	UStaticMesh* GetConsumableMesh() const { return ConsumableDataTableRowHandle.GetRow<FConsumableData>("")->ConsumableMesh; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FEquipmentData GetEquipmentData() const { return *EquipmentDataTableRowHandle.GetRow<FEquipmentData>(""); }
+	FColor GetConsumableOutlineColor() const { return ConsumableDataTableRowHandle.GetRow<FConsumableData>("")->PickupOutlineColor; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetWeaponData() const { return *WeaponDataTableRowHandle.GetRow<FWeaponData>(""); }
+	UStaticMesh* GetEquipmentMesh() const { return EquipmentDataTableRowHandle.GetRow<FEquipmentData>("")->EquipmentMesh; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FColor GetEquipmentOutlineColor() const { return EquipmentDataTableRowHandle.GetRow<FEquipmentData>("")->PickupOutlineColor; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UStaticMesh* GetWeaponMesh() const { return WeaponDataTableRowHandle.GetRow<FWeaponData>("")->StaticMesh; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FColor GetWeaponOutlineColor() const { return WeaponDataTableRowHandle.GetRow<FWeaponData>("")->PickupOutlineColor; }
 
 };
