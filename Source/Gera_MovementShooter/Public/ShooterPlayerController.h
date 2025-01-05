@@ -74,6 +74,9 @@ protected:
 	
 	// ------ SHOOTING AND WEAPONS ------
 
+	UPROPERTY(BlueprintReadWrite, meta=(ClampMin=0, ClampMax=9, UIMin=0, UIMax=9))
+	int32 EquippedWeapon;
+
 	// Arrow Component of Weapon located at the Muzzle.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UArrowComponent* MuzzleArrowComponent;
@@ -87,7 +90,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shooting/Weapons")
 	bool InfiniteAmmo = false;
-
+	
 	// Boolean used to control when the player is able to shoot their weapon.
 	UFUNCTION(BlueprintCallable)
 	bool CanFire();
@@ -240,10 +243,7 @@ public:
 	// These are Getters to make Getting Different Weapon Variables faster and cleaner.
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EAmmoType GetAmmoType() { return GetEquippedWeapon().AmmoType; }
-
-	UFUNCTION(Blueprintcallable, BlueprintPure)
-	int32 GetEquippedWeaponAmmo() { return GetInventory()->GetAmmo(GetAmmoType()); }
+	EAmmoType GetAmmoType() { return GetEquippedWeapon().PrimaryAmmoType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EWeaponType GetWeaponType() { return GetEquippedWeapon().WeaponType; }

@@ -110,7 +110,7 @@ bool AShooterPlayerController::CanFire()
 {
 	if (InfiniteAmmo == false)
 	{
-		if (FireRate > 0 && GetEquippedWeaponAmmo() > 0) return false;
+		if (FireRate > 0) return false;
 	}
 	else
 	{
@@ -139,20 +139,20 @@ FWeaponData AShooterPlayerController::GetEquippedWeapon()
 
 void AShooterPlayerController::ChargeShot(float MaxCharge)
 {
-	if (PlayerCharacter->InventoryComponent->GetAmmo(EAmmoType::EnergyAmmo) <= 0)
-	{
-		ResetWeapon();
-		return;
-	}
-
-	if (CurrentWeaponCharge < MaxCharge)
-	{
-		CurrentWeaponCharge += GetWorld()->DeltaTimeSeconds;
-	}
-	else
-	{
-		CurrentWeaponCharge = MaxCharge;
-	}
+	// if (PlayerCharacter->InventoryComponent->GetAmmo(EAmmoType::EnergyAmmo) <= 0)
+	// {
+	// 	ResetWeapon();
+	// 	return;
+	// }
+	//
+	// if (CurrentWeaponCharge < MaxCharge)
+	// {
+	// 	CurrentWeaponCharge += GetWorld()->DeltaTimeSeconds;
+	// }
+	// else
+	// {
+	// 	CurrentWeaponCharge = MaxCharge;
+	// }
 }
 
 void AShooterPlayerController::Shoot()

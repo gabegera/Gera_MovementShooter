@@ -34,7 +34,7 @@ struct GERA_MOVEMENTSHOOTER_API FAmmoData: public FTableRowBase
 	FColor PickupOutlineColor = FColor::Black;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EAmmoType AmmoType = EAmmoType::EnergyAmmo;
+	EAmmoType AmmoType = EAmmoType::AssaultRifleBullets;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 PickupAmount = 20;

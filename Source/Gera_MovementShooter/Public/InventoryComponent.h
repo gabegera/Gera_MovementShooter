@@ -7,6 +7,9 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class ABaseWeaponActor;
+
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GERA_MOVEMENTSHOOTER_API UInventoryComponent : public UActorComponent
@@ -21,7 +24,21 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
 	virtual void PostInitProperties() override;
+
+	UPROPERTY(EditDefaultsOnly, meta=(RowStructure="Gera_MovementShooter.WeaponData"))
+	UDataTable* WeaponsDataTable;
+
+	UPROPERTY(EditDefaultsOnly, meta=(ToolTip="Click to Refresh list of Starting Weapons. Use whenever changes are made to the Weapons Data Table."))
+	bool RefreshWeaponsDataTable;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FName, bool> StartingWeapons;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(RowType="WeaponData"))
+	TArray<FWeaponData> Weapons;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
@@ -34,55 +51,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingPrimaryWeapon;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData PrimaryWeapon;
+	void AddWeapon(FWeaponData NewWeapon);
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingSecondaryWeapon;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData SecondaryWeapon;
+	void AddAmmo(EAmmoType AmmoType, int32 AmmoAmount);
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingSpecialWeapon;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData SpecialWeapon;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FDataTableRowHandle EquipmentSlot;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FDataTableRowHandle SupportItemSlot;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int GetAmmo(EAmmoType AmmoType);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int GetEquipment(FName EquipmentName);
-	
-	UFUNCTION(BlueprintCallable)
-	void AddAmmo(EAmmoType AmmoType, int AmmoAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void AddEquipment(FName EquipmentName, int EquipmentAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveAmmo(EAmmoType AmmoType, int AmmoAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveEquipment(FName EquipmentName, int EquipmentAmount);
-
-	UFUNCTION(BlueprintCallable)
-	void SwapWeapons(EWeaponSlot WeaponSlot, FWeaponData NewWeapon);
-
-	UFUNCTION(BlueprintCallable)
-	void SwapEquipment(FDataTableRowHandle NewEquipment);
-
-	UFUNCTION(BlueprintCallable)
-	void SwapSupportItem(FDataTableRowHandle NewBuffItem);
+	TArray<FWeaponData>* GetWeapons() { return &Weapons; }
 	
 };

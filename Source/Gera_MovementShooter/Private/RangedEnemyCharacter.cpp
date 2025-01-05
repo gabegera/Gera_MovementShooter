@@ -12,7 +12,7 @@ void ARangedEnemyCharacter::BeginPlay()
 
 void ARangedEnemyCharacter::PickupWeapon(FWeaponData NewWeapon)
 {
-	InventoryComponent->SwapWeapons(NewWeapon.WeaponSlot, NewWeapon);
+	InventoryComponent->AddWeapon(NewWeapon);
 
 	WeaponChildComponent->SetChildActorClass(NewWeapon.WeaponActor->GetClass());
 }

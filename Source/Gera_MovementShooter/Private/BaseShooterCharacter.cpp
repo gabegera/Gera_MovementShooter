@@ -25,32 +25,11 @@ void ABaseShooterCharacter::BeginPlay()
 
 	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &ABaseShooterCharacter::BeginOverlap);
 	GetComponentByClass<UCapsuleComponent>()->OnComponentEndOverlap.AddDynamic(this, &ABaseShooterCharacter::EndOverlap);
-
-	if (InventoryComponent->PrimaryWeapon.IsNull() == false) EquipWeapon(InventoryComponent->PrimaryWeapon);
-	else if (InventoryComponent->SecondaryWeapon.IsNull() == false) EquipWeapon(InventoryComponent->SecondaryWeapon);
-	else if (InventoryComponent->SpecialWeapon.IsNull() == false) EquipWeapon(InventoryComponent->SpecialWeapon);
 }
 
 void ABaseShooterCharacter::OnConstruction(const FTransform& Transform)
 {
-	Super::OnConstruction(Transform);
-
-	if (InventoryComponent->StartingPrimaryWeapon.IsNull() == false)
-	{
-		InventoryComponent->PrimaryWeapon = *InventoryComponent->StartingPrimaryWeapon.GetRow<FWeaponData>("");
-		EquipWeapon(InventoryComponent->PrimaryWeapon);
-	}
-	else if (InventoryComponent->StartingSecondaryWeapon.IsNull() == false)
-	{
-		InventoryComponent->SecondaryWeapon = *InventoryComponent->StartingSecondaryWeapon.GetRow<FWeaponData>("");
-		EquipWeapon(InventoryComponent->SecondaryWeapon);
-	}
-	else if (InventoryComponent->StartingSpecialWeapon.IsNull() == false)
-	{
-		InventoryComponent->SpecialWeapon = *InventoryComponent->StartingSpecialWeapon.GetRow<FWeaponData>("");
-		EquipWeapon(InventoryComponent->SpecialWeapon);
-	}
-	
+	Super::OnConstruction(Transform);	
 }
 
 void ABaseShooterCharacter::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -225,7 +204,7 @@ bool ABaseShooterCharacter::PickupAmmo_Implementation(const EAmmoType AmmoType, 
 
 bool ABaseShooterCharacter::PickupWeapon_Implementation(FWeaponData NewWeapon)
 {
-	InventoryComponent->SwapWeapons(NewWeapon.WeaponSlot, NewWeapon);
+	InventoryComponent->AddWeapon(NewWeapon);
 	
 	return true;
 }

@@ -65,7 +65,7 @@ public:
 	FWeaponData GetEquippedWeapon();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EAmmoType GetAmmoType() { return GetEquippedWeapon().AmmoType; }
+	EAmmoType GetAmmoType() { return GetEquippedWeapon().PrimaryAmmoType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EWeaponType GetWeaponType() { return GetEquippedWeapon().WeaponType; }

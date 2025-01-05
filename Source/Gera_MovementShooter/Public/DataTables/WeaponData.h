@@ -6,9 +6,16 @@
 UENUM(BlueprintType)
 enum class EWeaponSlot : uint8
 {
-	Primary = 0 UMETA(DisplayName = "Primary"),
-	Secondary = 1 UMETA(DisplayName = "Secondary"),
-	Special = 2 UMETA(DisplayName = "Special"),
+	ShieldGun = 0 UMETA(DisplayName = "Shield Gun Slot"),
+	AssaultRifle = 1 UMETA(DisplayName = "Assault Rifle Slot"),
+	BioRifle = 2 UMETA(DisplayName = "Bio Rifle Slot"),
+	ShockRifle = 3 UMETA(DisplayName = "Shock Rifle Slot"),
+	LinkGun = 4 UMETA(DisplayName = "Link Gun Slot"),
+	Minigun = 5 UMETA(DisplayName = "Minigun Slot"),
+	FlakCannon = 6 UMETA(DisplayName = "Flak Cannon Slot"),
+	RocketLauncher = 7 UMETA(DisplayName = "Rocket Launcher Slot"),
+	SniperRifle = 8 UMETA(DisplayName = "Sniper Rifle Slot")
+	
 };
 
 UENUM(BlueprintType)
@@ -29,12 +36,15 @@ enum class EProjectileType : uint8
 UENUM(BlueprintType)
 enum class EAmmoType : uint8
 {
-	PistolAmmo = 0 UMETA(DisplayName = "PistolAmmo"),
-	RifleAmmo = 1 UMETA(DisplayName = "RifleAmmo"),
-	ShotgunAmmo = 2 UMETA(DisplayName = "ShotgunAmmo"),
-	SniperAmmo = 3 UMETA(DisplayName = "SniperAmmo"),
-	ExplosiveAmmo = 4 UMETA(DisplayName = "ExplosiveAmmo"),
-	EnergyAmmo = 5 UMETA(DisplayName = "EnergyAmmo"),
+	AssaultRifleBullets = 0 UMETA(DisplayName = "Assault Rifle Bullets"),
+	AssaultRifleGrenades = 1 UMETA(DisplayName = "Assault Rifle Grenades"),
+	BioRifle = 2 UMETA(DisplayName = "Bio Rifle"),
+	ShockRifle = 3 UMETA(DisplayName = "Shock Rifle"),
+	LinkGun = 4 UMETA(DisplayName = "Link Gun"),
+	Minigun = 5 UMETA(DisplayName = "Minigun"),
+	FlakCannon = 6 UMETA(DisplayName = "Flak Cannon"),
+	RocketLauncher = 7 UMETA(DisplayName = "Rocket Launcher"),
+	SniperRifle = 8 UMETA(Displayname = "Sniper Rifle")
 };
 
 USTRUCT(BlueprintType)
@@ -58,13 +68,13 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	}
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
-	EWeaponSlot WeaponSlot = EWeaponSlot::Primary;
+	EWeaponSlot WeaponSlot = EWeaponSlot::ShieldGun;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	FName Name = NAME_None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
-	EWeaponType WeaponType = EWeaponType::Melee;
+	EWeaponType WeaponType = EWeaponType::SemiAutomatic;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon Data")
 	TSubclassOf<AActor> WeaponActor;
@@ -89,7 +99,12 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	// What type of ammo the weapon uses.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Ammo Settings")
-	EAmmoType AmmoType = EAmmoType::PistolAmmo;
+	EAmmoType PrimaryAmmoType = EAmmoType::AssaultRifleBullets;
+
+	// What type of ammo the Secondar Fire uses.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
+	meta = (EditCondition = "WeaponType != EWeaponType::Melee"), Category="Ammo Settings")
+	EAmmoType SecondaryAmmoType = EAmmoType::AssaultRifleGrenades;
 
 	// How much ammo it costs per shot fired.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,
@@ -205,3 +220,8 @@ struct GERA_MOVEMENTSHOOTER_API FWeaponData: public FTableRowBase
 	meta = (EditCondition = "WeaponType != EWeaponType::Melee && IsExplosive"), Category="Explosive")
 	float ExplosionRadius = 0.0f;
 };
+
+inline uint32 GetTypeHash(const FWeaponData& WeaponData)
+{
+	return FCrc::MemCrc32(&WeaponData, sizeof(WeaponData));
+}

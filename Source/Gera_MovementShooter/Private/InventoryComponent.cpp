@@ -16,38 +16,49 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<FWeaponData*> OutRowArray;
+	WeaponsDataTable->GetAllRows<FWeaponData>("", OutRowArray);
+	Weapons.Reserve(9);
+	
+	for (int32 i = 0; i < StartingWeapons.Num(); i++)
+	{
+		if (StartingWeapons.FindRef(OutRowArray[i]->Name) == true)
+		{
+			Weapons.Add(*OutRowArray[i]);
+		}
+	}
+}
+
+void UInventoryComponent::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (RefreshWeaponsDataTable == true)
+	{
+		RefreshWeaponsDataTable = false;
+	}
+	
+	if (WeaponsDataTable == nullptr) return;
+
+	TArray<FWeaponData*> OutRowArray;
+	WeaponsDataTable->GetAllRows<FWeaponData>("", OutRowArray);
+	TMap<FName, bool> NewMap;
+	
+	for (int32 i = 0; i < OutRowArray.Num(); i++)
+	{
+		const FName Key = OutRowArray[i]->Name;
+		const bool Value = StartingWeapons.FindRef(Key);
+		NewMap.Add(Key, Value);
+	}
+
+	StartingWeapons.Empty();
+	StartingWeapons.Append(NewMap);
 }
 
 void UInventoryComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
-}
-
-
-void UInventoryComponent::SwapWeapons(EWeaponSlot WeaponSlot, FWeaponData NewWeapon)
-{
-	switch (WeaponSlot)
-	{
-	case EWeaponSlot::Primary:
-		PrimaryWeapon = NewWeapon;
-		break;
-	case EWeaponSlot::Secondary:
-		SecondaryWeapon = NewWeapon;
-		break;
-	case EWeaponSlot::Special:
-		SpecialWeapon = NewWeapon;
-		break;
-	}
-}
-
-void UInventoryComponent::SwapEquipment(FDataTableRowHandle NewEquipment)
-{
-	EquipmentSlot = NewEquipment;
-}
-
-void UInventoryComponent::SwapSupportItem(FDataTableRowHandle NewBuffItem)
-{
-	SupportItemSlot = NewBuffItem;
 }
 
 // Called every frame
@@ -58,40 +69,16 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
-int UInventoryComponent::GetAmmo(EAmmoType AmmoType)
+void UInventoryComponent::AddWeapon(FWeaponData NewWeapon)
 {
-	return AmmoMap.FindRef(AmmoType);
+	Weapons.Add(NewWeapon);
 }
 
-int UInventoryComponent::GetEquipment(FName EquipmentName)
+void UInventoryComponent::AddAmmo(EAmmoType AmmoType, int32 AmmoAmount)
 {
-	return EquipmentMap.FindRef(EquipmentName);
+	AmmoMap.Add(AmmoType, AmmoAmount);
 }
 
-
-void UInventoryComponent::AddAmmo(EAmmoType AmmoType, int AmmoAmount)
-{
-	AmmoMap.Add(AmmoType, AmmoMap.FindRef(AmmoType) + AmmoAmount);
-}
-
-void UInventoryComponent::AddEquipment(FName EquipmentName, int EquipmentAmount)
-{
-	EquipmentMap.Add(EquipmentName, EquipmentMap.FindRef(EquipmentName) + EquipmentAmount);
-}
-
-void UInventoryComponent::RemoveAmmo(EAmmoType AmmoType, int AmmoAmount)
-{
-	AmmoMap.Add(AmmoType, AmmoMap.FindRef(AmmoType) - AmmoAmount);
-
-	if (AmmoMap.FindRef(AmmoType) < 0) AmmoMap.Add(AmmoType, 0);
-}
-
-void UInventoryComponent::RemoveEquipment(FName EquipmentName, int EquipmentAmount)
-{
-	EquipmentMap.Add(EquipmentName, EquipmentMap.FindRef(EquipmentName) - EquipmentAmount);
-
-	if (EquipmentMap.FindRef(EquipmentName) < 0) EquipmentMap.Add(EquipmentName, 0);
-}
 
 
 
