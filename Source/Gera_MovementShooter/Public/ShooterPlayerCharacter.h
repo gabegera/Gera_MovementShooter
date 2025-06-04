@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseShooterCharacter.h"
+#include "ShooterCharacter.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -12,7 +12,7 @@
 
 
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API AShooterPlayerCharacter : public ABaseShooterCharacter
+class GERA_MOVEMENTSHOOTER_API AShooterPlayerCharacter : public AShooterCharacter
 {
 	GENERATED_BODY()
 

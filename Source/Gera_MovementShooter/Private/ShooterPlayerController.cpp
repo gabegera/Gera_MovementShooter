@@ -31,7 +31,13 @@ void AShooterPlayerController::BeginPlay()
 		// Add each mapping context, along with their priority values. Higher values out prioritize lower values.
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+
+	FOnTimelineFloat ProgressUpdate;
+	ProgressUpdate.BindUFunction(this, FName("UpdateDash"));
+
+	DashTimeline.AddInterpFloat(DashCurve, ProgressUpdate);
 }
+
 
 void AShooterPlayerController::UseSpeedBoost()
 {
@@ -78,7 +84,7 @@ void AShooterPlayerController::Move(float InputX, float InputY)
 
 void AShooterPlayerController::AddLookInput(FVector2D Input)
 {
-	if (IsAiming()) Input *= MouseSensitivity / GetEquippedWeapon().ZoomMultiplier;
+	if (IsAiming()) Input *= MouseSensitivity / GetEquippedWeaponData().ZoomMultiplier;
 	else Input *= MouseSensitivity;
 
 	if (RecoilCache != FVector2D::ZeroVector)
@@ -106,20 +112,6 @@ void AShooterPlayerController::Dash()
 	DashCooldownValue = DashCooldownLength;
 }
 
-bool AShooterPlayerController::CanFire()
-{
-	if (InfiniteAmmo == false)
-	{
-		if (FireRate > 0 && GetEquippedWeaponAmmo() > 0) return false;
-	}
-	else
-	{
-		if (FireRate <= 0) return true;
-	}
-
-	return false;
-}
-
 
 void AShooterPlayerController::Crouch()
 {
@@ -132,9 +124,9 @@ void AShooterPlayerController::StopCrouch()
 	PlayerCharacter->UnCrouch();
 }
 
-FWeaponData AShooterPlayerController::GetEquippedWeapon()
+FWeaponData AShooterPlayerController::GetEquippedWeaponData()
 {
-	return PlayerCharacter->EquippedWeapon;
+	return *PlayerCharacter->EquippedWeapon.GetRow<FWeaponData>("");
 }
 
 void AShooterPlayerController::ChargeShot(float MaxCharge)
@@ -147,7 +139,7 @@ void AShooterPlayerController::ChargeShot(float MaxCharge)
 
 	if (CurrentWeaponCharge < MaxCharge)
 	{
-		CurrentWeaponCharge += GetWorld()->DeltaTimeSeconds;
+		CurrentWeaponCharge += CurrentDeltaTime;
 	}
 	else
 	{
@@ -155,33 +147,35 @@ void AShooterPlayerController::ChargeShot(float MaxCharge)
 	}
 }
 
-void AShooterPlayerController::Shoot()
+void AShooterPlayerController::Shoot(bool InfiniteAmmo)
 {
-	if (CanFire() == false) return;
-	
 	float DamageAfterMultiplier = GetDamage();
 	if (IsDamageBoostActive) DamageAfterMultiplier *= DamageBoostMultiplier;
 
-	// Shot Starts at Player Camera Position.
-	// There is a forward and down offset added so that the projectile starts just below the camera.
-	FVector ShotStart = GetFPCameraLocation() + GetFPCameraForward() * 10.0f + GetFPCameraUp() * -10.0f;
+	if (!InfiniteAmmo)
+	{
+		if (GetInventory()->GetAmmo(GetAmmoType()) <= 0) return;
+		if (FireRate > 0 || (!SemiAutoCanFire && !GetEquippedWeaponData().CanCharge)) return;
+		GetInventory()->RemoveAmmo(GetEquippedWeaponData().AmmoType, GetEquippedWeaponData().AmmoCost);
+	}
+
+	//Shot Starts at Player Camera with an offset of 10.0f
+	FVector ShotStart = GetFPCameraLocation() + GetFPCameraForward() * 10.0f + GetFPCameraUp() * 10.0f;
 	FVector ShotTarget = GetFPCameraLocation() + GetFPCameraForward() * 50000.0f;
 
 	// If Player has a weapon
 	if (GetPlayerCharacter()->WeaponChildComponent->GetChildActor())
 	{
-		// Change the Shot start position to the muzzle of the weapon.
 		ShotStart = GetMuzzleLocation();
 
-		// Uses a Line Trace to get a more accurate Shot Target Position.
 		FHitResult Hit;
 		FCollisionQueryParams IgnorePlayer;
 		IgnorePlayer.AddIgnoredActor(GetPlayerCharacter()->GetUniqueID());
 		GetWorld()->LineTraceSingleByChannel(Hit, GetFPCameraLocation(), GetFPCameraLocation() + GetFPCameraForward() * 50000.0f, ECC_PhysicsBody, IgnorePlayer);
+		
 		ShotTarget = Hit.bBlockingHit ? Hit.ImpactPoint : Hit.TraceEnd;
 	}
-
-	// Shoots for every pellet the weapon has. Will only fire once if weapon is not a shotgun.
+	
 	for (int i = 0; i <= GetPelletCount(); i++)
 	{
 		if (GetProjectileType() == EProjectileType::Hitscan) {
@@ -190,8 +184,7 @@ void AShooterPlayerController::Shoot()
 		else if (GetProjectileType() == EProjectileType::Projectile) {
         	GetPlayerCharacter()->ShootProjectile(GetProjectileActor(), GetShotSpreadInDegrees(), ShotStart, ShotTarget, GetProjectileVelocity(), DamageAfterMultiplier);
         }
-
-		// If the Weapon is not a shotgun break the loop.
+		
 		if (IsWeaponShotgun() == false) break;
 	}
 	
@@ -203,23 +196,19 @@ void AShooterPlayerController::Shoot()
 	
 	if (GetWeaponType() == EWeaponType::Automatic)
 	{
-		// Resets fire rate.
 		FireRate = GetFireRate();
 	}
-	else if (GetWeaponType() == EWeaponType::SemiAutomatic)
-	{
-		FireRate = MAX_FLT;
-	}
+	else SemiAutoCanFire = false;
 }
 
 float AShooterPlayerController::GetShotSpreadInDegrees()
 {
-	if (float Spread = GetEquippedWeapon().HipfireSpreadInDegrees)
+	if (float Spread = GetEquippedWeaponData().SpreadInDegrees)
 	{
 		if (IsAiming())
 		{
-			if (GetEquippedWeapon().AimingSpreadOverride) Spread = GetEquippedWeapon().AimingSpreadInDegrees;
-			else Spread /= GetEquippedWeapon().ZoomMultiplier;
+			if (GetEquippedWeaponData().AimingSpreadOverride) Spread = GetEquippedWeaponData().AimingSpreadInDegrees;
+			else Spread /= GetEquippedWeaponData().ZoomMultiplier;
 		}
 		
 		return Spread;
@@ -304,6 +293,7 @@ void AShooterPlayerController::ResetWeapon()
 {
 	FireRate = 0;
 	CurrentWeaponCharge = 0;
+	SemiAutoCanFire = true;
 	RecoilTarget = FVector2D::ZeroVector;
 	RecoilProgress = FVector2D::ZeroVector;
 
@@ -321,86 +311,86 @@ void AShooterPlayerController::ResetWeapon()
 }
 
 void AShooterPlayerController::UseThrowableItem()
-{	
-	// FEquipmentData ThrowableData = *PlayerInventoryComp->EquipmentSlot.GetRow<FEquipmentData>("");
-	//
-	// int EquipmentCount = PlayerInventoryComp->GetEquipment(ThrowableData.EquipmentName);
-	//
-	// if (EquipmentCount <= 0) return;
-	//
-	// const AActor* ThrowableActor = ThrowableData.EquipmentActor;
-	// AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor->GetClass());
-	// //AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor);
-	//
-	// if (!SpawnedThrowable) return;
-	//
-	// SpawnedThrowable->SetActorLocation(PlayerCameraManager->GetTransform().GetLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
-	// SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
-	// SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(ThrowableVelocity * PlayerCameraManager->GetCameraRotation().Vector(), "None", true);
-	//
-	// UExplosiveComponent* ExplosiveComponent = SpawnedThrowable->GetComponentByClass<UExplosiveComponent>();
-	// if (ExplosiveComponent)
-	// {
-	// 	if (IsDamageBoostActive)
-	// 	{
-	// 		ExplosiveComponent->SetDamage(ThrowableData.Damage *= DamageBoostMultiplier);
-	// 	}
-	// 	else ExplosiveComponent->SetDamage(ThrowableData.Damage);
-	// 	ExplosiveComponent->SetBlastRadius(ThrowableData.BlastRadius);
-	// 	ExplosiveComponent->SetFuseTime(ThrowableData.FuseTime);
-	// }
-	//
-	// PlayerInventoryComp->RemoveEquipment(ThrowableData.EquipmentName, 1);
+{
+	FItemData* ThrowableData = PlayerInventoryComp->EquipmentSlot.GetRow<FItemData>("");
+
+	int EquipmentCount = PlayerInventoryComp->GetEquipment(ThrowableData->Name);
+
+	if (EquipmentCount <= 0) return;
+
+	const TSubclassOf<AActor> ThrowableActor = ThrowableData->ItemActor;
+	AThrowableActor* SpawnedThrowable = Cast<AThrowableActor>(GetWorld()->SpawnActor(ThrowableActor));
+	//AActor* SpawnedThrowable = GetWorld()->SpawnActor(ThrowableActor);
+
+	if (!SpawnedThrowable) return;
+
+	SpawnedThrowable->SetActorLocation(PlayerCameraManager->GetTransform().GetLocation() + PlayerCameraManager->GetActorForwardVector() * 150);
+	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->SetSimulatePhysics(true);
+	SpawnedThrowable->GetComponentByClass<UStaticMeshComponent>()->AddImpulse(ThrowableVelocity * PlayerCameraManager->GetCameraRotation().Vector(), "None", true);
+
+	UExplosiveComponent* ExplosiveComponent = SpawnedThrowable->GetComponentByClass<UExplosiveComponent>();
+	if (ExplosiveComponent)
+	{
+		if (IsDamageBoostActive)
+		{
+			ExplosiveComponent->SetDamage(ThrowableData->Damage *= DamageBoostMultiplier);
+		}
+		else ExplosiveComponent->SetDamage(ThrowableData->Damage);
+		ExplosiveComponent->SetBlastRadius(ThrowableData->BlastRadius);
+		ExplosiveComponent->SetFuseTime(ThrowableData->FuseTime);
+	}
+
+	PlayerInventoryComp->RemoveEquipment(ThrowableData->Name, 1);
 }
 
 void AShooterPlayerController::UseBuffItem()
 {
-	// if (PlayerInventoryComp->SupportItemSlot.IsNull()) return;
-	//
-	// float TimerLength = PlayerInventoryComp->GetEquippedSupportData().BuffDuration;
-	// EBuffEffects CurrentBuffEffect = PlayerInventoryComp->GetEquippedSupportData().BuffEffect;
-	// switch (CurrentBuffEffect)
-	// {
-	// case EBuffEffects::None:
-	// 	break;
-	// case EBuffEffects::Heal:
-	// 	PlayerHealthComp->AddHealth(PlayerInventoryComp->GetEquippedSupportData().HealAmount);
-	// 	break;
-	// case EBuffEffects::SpeedBoost:
-	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-	// 	UseSpeedBoost();
-	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSpeedBoost, TimerLength, false);
-	// 	break;
-	// case EBuffEffects::DamageBoost:
-	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-	// 	UseDamageBoost();
-	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopDamageBoost, TimerLength, false);
-	// 	break;
-	// case EBuffEffects::SlowTime:
-	// 	if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
-	// 	UseSlowTime();
-	// 	GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSlowTime, TimerLength / SlowTimeDivision, false);
-	// 	break;
-	// default:
-	// 	break;
-	// }
-	//
-	// FDataTableRowHandle Empty;
-	// PlayerInventoryComp->SupportItemSlot = Empty;
+	if (PlayerInventoryComp->SupportItemSlot.IsNull()) return;
+
+	float TimerLength = PlayerInventoryComp->GetEquippedSupportData().BuffDuration;
+	EBuffEffects CurrentBuffEffect = PlayerInventoryComp->GetEquippedSupportData().BuffEffect;
+	switch (CurrentBuffEffect)
+	{
+	case EBuffEffects::None:
+		break;
+	case EBuffEffects::Heal:
+		PlayerHealthComp->AddHealth(PlayerInventoryComp->GetEquippedSupportData().HealAmount);
+		break;
+	case EBuffEffects::SpeedBoost:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseSpeedBoost();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSpeedBoost, TimerLength, false);
+		break;
+	case EBuffEffects::DamageBoost:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseDamageBoost();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopDamageBoost, TimerLength, false);
+		break;
+	case EBuffEffects::SlowTime:
+		if (GetWorldTimerManager().GetTimerRemaining(BuffTimer) > 0) break;
+		UseSlowTime();
+		GetWorldTimerManager().SetTimer(BuffTimer, this, &AShooterPlayerController::StopSlowTime, TimerLength / SlowTimeDivision, false);
+		break;
+	default:
+		break;
+	}
+
+	FDataTableRowHandle Empty;
+	PlayerInventoryComp->SupportItemSlot = Empty;
 }
 
 FVector2D AShooterPlayerController::GetHipfireRecoil()
 {
-	const float RecoilX = FMath::RandRange(GetEquippedWeapon().HipfireRecoilMinX, GetEquippedWeapon().HipfireRecoilMaxX);
-	const float RecoilY = GetEquippedWeapon().HipfireRecoilY;
+	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().HipfireRecoilMinX, GetEquippedWeaponData().HipfireRecoilMaxX);
+	const float RecoilY = GetEquippedWeaponData().HipfireRecoilY;
 
 	return FVector2D(RecoilX, RecoilY);
 }
 
 FVector2D AShooterPlayerController::GetAimingRecoil()
 {
-	const float RecoilX = FMath::RandRange(GetEquippedWeapon().AimingRecoilMinX, GetEquippedWeapon().AimingRecoilMaxX);
-	const float RecoilY = GetEquippedWeapon().AimingRecoilY;
+	const float RecoilX = FMath::RandRange(GetEquippedWeaponData().AimingRecoilMinX, GetEquippedWeaponData().AimingRecoilMaxX);
+	const float RecoilY = GetEquippedWeaponData().AimingRecoilY;
 
 	return FVector2D(RecoilX, RecoilY);
 }
@@ -424,6 +414,6 @@ void AShooterPlayerController::Tick(float DeltaTime)
 
 	// ------ FIRE RATE ------
 
-	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeapon().FireRate * (GetEquippedWeapon().FireRate / 60);
+	if (FireRate > 0) FireRate -= DeltaTime * GetEquippedWeaponData().FireRate * (GetEquippedWeaponData().FireRate / 60);
 
 }

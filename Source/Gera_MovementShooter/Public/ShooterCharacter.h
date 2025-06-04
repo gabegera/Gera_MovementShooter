@@ -6,19 +6,16 @@
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/PickupInterface.h"
-#include "BaseShooterCharacter.generated.h"
-
-class APickupObject;
+#include "ShooterCharacter.generated.h"
 
 UCLASS()
-class GERA_MOVEMENTSHOOTER_API ABaseShooterCharacter : public ACharacter, public IPickupInterface
+class GERA_MOVEMENTSHOOTER_API AShooterCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	ABaseShooterCharacter();
+	AShooterCharacter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UChildActorComponent* WeaponChildComponent = nullptr;
@@ -27,7 +24,10 @@ public:
 	UInventoryComponent* InventoryComponent = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
-	FWeaponData EquippedWeapon;
+	FDataTableRowHandle EquippedWeapon;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FWeaponData GetEquippedWeaponData();
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,10 +48,10 @@ protected:
     USkeletalMeshComponent* WeaponChildMesh = nullptr;
     
     UFUNCTION(BlueprintCallable)
-    virtual void EquipWeapon(FWeaponData NewWeapon);
+    virtual void EquipWeapon(FDataTableRowHandle NewWeapon);
     
     UPROPERTY()
-    TSet<APickupObject*> PickupSet;
+    TSet<AActor*> PickupSet;
 
 public:	
 	// Called to bind functionality to input
@@ -61,10 +61,10 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	APickupObject* FindClosestPickup();
+	AActor* FindClosestPickup();
 
-	// UFUNCTION(BlueprintCallable)
-	// void PickupItem();
+	UFUNCTION(BlueprintCallable)
+	void PickupItem();
 
 	UFUNCTION(BlueprintCallable)
 	void ShootHitscan(float WeaponSpreadInDegrees, FVector ShotOrigin, FVector ShotTarget, float Damage);
@@ -72,15 +72,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShootProjectile(const TSubclassOf<AActor> ProjectileActor, const float WeaponSpreadInDegrees, const FVector ShotOrigin, const FVector ShotTarget, const float ProjectileVelocity, const float Damage);
 
-	UFUNCTION(BlueprintCallable)
-	bool PickupAmmo_Implementation(const EAmmoType AmmoType, const int32 AmmoAmount) override;
-
-	UFUNCTION(BlueprintCallable)
-	bool PickupWeapon_Implementation(FWeaponData WeaponDataTableRowHandle) override;
-
-	UFUNCTION(BlueprintCallable)
-	bool PickupConsumable_Implementation(const EConsumableEffect ConsumableEffect, const int32 ConsumableAmount) override;
-	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

@@ -62,40 +62,40 @@ public:
 	// ------ WEAPON DATA GETTERS ------
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FWeaponData GetEquippedWeapon();
+	FWeaponData GetEquippedWeaponData();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EAmmoType GetAmmoType() { return GetEquippedWeapon().AmmoType; }
+	EAmmoType GetAmmoType() { return GetEquippedWeaponData().AmmoType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EWeaponType GetWeaponType() { return GetEquippedWeapon().WeaponType; }
+	EWeaponType GetWeaponType() { return GetEquippedWeaponData().WeaponType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeapon().ProjectileActor;}
+	TSubclassOf<AActor> GetProjectileActor() { return GetEquippedWeaponData().ProjectileActor;}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	EProjectileType GetProjectileType() { return GetEquippedWeapon().ProjectileType; }
+	EProjectileType GetProjectileType() { return GetEquippedWeaponData().ProjectileType; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetProjectileVelocity() { return GetEquippedWeapon().ProjectileVelocity; }
+	float GetProjectileVelocity() { return GetEquippedWeaponData().ProjectileVelocity; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetMuzzleLocation() { return GetEnemyCharacter()->WeaponChildComponent->GetChildActor()->GetComponentByClass<UArrowComponent>()->GetComponentLocation(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetFireRate() { return GetEquippedWeapon().FireRate; }
+	float GetFireRate() { return GetEquippedWeaponData().FireRate; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetDamage() { return GetEquippedWeapon().Damage; }
+	float GetDamage() { return GetEquippedWeaponData().Damage; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsWeaponShotgun() { return GetEquippedWeapon().IsShotgun; }
+	bool IsWeaponShotgun() { return GetEquippedWeaponData().IsShotgun; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetPelletCount() { return GetEquippedWeapon().PelletCount; }
+	int32 GetPelletCount() { return GetEquippedWeaponData().PelletCount; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetMaxChargeTime() { return GetEquippedWeapon().MaxChargeTime; }
+	float GetMaxChargeTime() { return GetEquippedWeaponData().MaxChargeTime; }
 
 	virtual void Tick(float DeltaTime) override;
 };

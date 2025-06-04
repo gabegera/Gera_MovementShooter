@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RangedEnemyCharacter.h"
-#include "BasePickupObject.h"
+#include "PickupObject.h"
 
 void ARangedEnemyCharacter::BeginPlay()
 {
@@ -10,9 +10,9 @@ void ARangedEnemyCharacter::BeginPlay()
 	
 }
 
-void ARangedEnemyCharacter::PickupWeapon(FWeaponData NewWeapon)
+void ARangedEnemyCharacter::PickupWeapon(APickupObject* Pickup)
 {
-	InventoryComponent->SwapWeapons(NewWeapon.WeaponSlot, NewWeapon);
+	InventoryComponent->SwapWeapons(EWeaponSlot::Primary, Pickup->GetComponentByClass<UPickupComponent>()->GetWeaponPickup());
 
-	WeaponChildComponent->SetChildActorClass(NewWeapon.WeaponActor->GetClass());
+	WeaponChildComponent->SetChildActorClass(Pickup->GetComponentByClass<UPickupComponent>()->GetWeaponPickupData().WeaponActor->GetClass());
 }

@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataTables/WeaponData.h"
+#include "WeaponData.h"
+#include "ItemData.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
@@ -21,7 +22,11 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	virtual void PostInitProperties() override;
+	UPROPERTY(EditDefaultsOnly)
+	UDataTable* WeaponsDataTable = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	FDataTableRowHandle EmptyHands;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EAmmoType, int> AmmoMap;
@@ -34,29 +39,29 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingPrimaryWeapon;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData PrimaryWeapon;
+	FDataTableRowHandle PrimaryWeapon;
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingSecondaryWeapon;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData SecondaryWeapon;
+	FDataTableRowHandle SecondaryWeapon;
 
-	UPROPERTY(EditDefaultsOnly, meta=(RowType="WeaponData"), Category="Weapons")
-	FDataTableRowHandle StartingSpecialWeapon;
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FWeaponData SpecialWeapon;
+	FDataTableRowHandle HeavyWeapon;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FDataTableRowHandle GetEmptyHands() { return EmptyHands; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle EquipmentSlot;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FItemData GetEquippedEquipmentData() { return *EquipmentSlot.GetRow<FItemData>(""); }
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FDataTableRowHandle SupportItemSlot;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FItemData GetEquippedSupportData() { return *SupportItemSlot.GetRow<FItemData>(""); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetAmmo(EAmmoType AmmoType);
@@ -77,7 +82,7 @@ public:
 	void RemoveEquipment(FName EquipmentName, int EquipmentAmount);
 
 	UFUNCTION(BlueprintCallable)
-	void SwapWeapons(EWeaponSlot WeaponSlot, FWeaponData NewWeapon);
+	void SwapWeapons(EWeaponSlot WeaponSlot, FDataTableRowHandle NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void SwapEquipment(FDataTableRowHandle NewEquipment);

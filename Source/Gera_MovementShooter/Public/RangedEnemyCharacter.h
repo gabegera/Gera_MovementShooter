@@ -27,7 +27,7 @@ public:
 	ERangedEnemyType GetEnemyType() const { return EnemyType; }
 
 	UFUNCTION(BlueprintCallable)
-	void PickupWeapon(FWeaponData NewWeapon);
+	void PickupWeapon(APickupObject* Pickup);
 
 protected:
 
